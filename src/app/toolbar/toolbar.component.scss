@@ -1,0 +1,20 @@
+mat-toolbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 0
+
+}
+
+#logo{
+  height: 3.5em;
+  margin-right: 20px;
+}
+
+.spacer {
+  cursor: pointer !important;
+  float: right;
+  right: 10px;
+  margin-right: 10px !important;
+}
+
+

@@ -1,0 +1,97 @@
+<mat-accordion>
+  <mat-expansion-panel [expanded]="!panelOpenState">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Orchestration
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <div class="container">
+      <div>
+        <mat-card>
+          <mat-card-title> Request</mat-card-title>
+          <mat-card-content>
+            <!-- <mat-form-field class="example-full-width">
+               <mat-label>Parameters</mat-label>
+               <textarea matInput placeholder="parameter1, parameter2, ..."></textarea>
+             </mat-form-field> -->
+            <div class="card_content">
+              <mat-form-field>
+                <mat-label>Provider type</mat-label>
+                <mat-select [(value)]="selectedPType">
+                  <mat-option value="mqtt">MQTT</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Location</mat-label>
+                <mat-select [(value)]="selectedLocation">
+                  <mat-option value="to">Torino</mat-option>
+                  <mat-option value="mi">Milano</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Search ID</mat-label>
+                <mat-select [(value)]="selectedSID">
+                  <mat-option value="857">857</mat-option>
+                  <mat-option value="858">858</mat-option>
+                  <mat-option value="863">863</mat-option>
+                  <mat-option value="864">864</mat-option>
+
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+          <div class="btn_section">
+            <button (click)="submitRequest()" id="btn_submit" mat-raised-button>Submit</button>
+          </div>
+        </mat-card>
+      </div>
+      <div>
+        <mat-card>
+          <mat-card-title> Response</mat-card-title>
+          <mat-card-content>
+            <div *ngFor="let o of options; let i = index">
+              <mat-checkbox (change)="onChange($event)" [value]="o.metadata.FE_Sensor_ID"
+                            color="primary">
+                {{o.metadata.FE_Sensor_Name }}
+                - {{o.metadata.FE_Meas_Unit}} -
+                {{o.metadata.FE_Site_ID}} -
+                {{o.metadata.FE_Protoc_Type}}
+              </mat-checkbox>
+            </div>
+          </mat-card-content>
+          <div class="btn_section">
+            <button (click)="save()" id="btn_save" mat-raised-button>Save</button>
+          </div>
+        </mat-card>
+      </div>
+      <div #mapContainer id="map">
+      </div>
+    </div>
+
+  </mat-expansion-panel>
+  <mat-expansion-panel *ngIf="showPanel" [(expanded)]="panelOpenState">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Data Visualization
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <div *ngIf="showPanel" class="visualization_div">
+      <app-chart-visualization
+        (messageEventLA)="receiveMessageLA($event)"
+        (messageEventLO)="receiveMessageLO($event)">
+
+      </app-chart-visualization>
+    </div>
+  </mat-expansion-panel>
+</mat-accordion>
+
+
+
+
+
+
+

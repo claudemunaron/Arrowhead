@@ -1,0 +1,77 @@
+<div class="title_dialog" mat-dialog-title>
+  <mat-icon>settings</mat-icon>
+  Settings
+</div>
+<div mat-dialog-content>
+  <div class="filter_container">
+    <div class="filter_item">
+      <mat-form-field>
+        <mat-label>Date from</mat-label>
+        <input [(ngModel)]="selectedDateFrom" [matDatepicker]="picker" [value]="data.date" matInput>
+        <mat-datepicker-toggle [for]="picker" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+    <div class="filter_item">
+      <mat-form-field>
+        <mat-label>Date to</mat-label>
+        <input [(ngModel)]="selectedDateTo" [matDatepicker]="picker3" [value]="data.date" matInput>
+        <mat-datepicker-toggle [for]="picker3" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #picker3></mat-datepicker>
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="filter_container">
+    <div class="filter_item">
+      <mat-form-field>
+        <input [(ngModel)]="start_time" [value]="start_time" matInput placeholder="start time" type="time">
+      </mat-form-field>
+    </div>
+    <div class="filter_item">
+      <mat-form-field>
+        <input [(ngModel)]="end_time" matInput placeholder="end time" type="time">
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="filter_item">
+    <!--<mat-form-field class="example-full-width">
+      <mat-label>Site ID</mat-label>
+      <input matInput placeholder="Ex. Torino" value="Torino">
+    </mat-form-field> -->
+
+    <mat-form-field>
+      <mat-label>Select a city</mat-label>
+      <mat-select (selectionChange)="changeCity($event)" [(value)]="selectedCity" [formControl]="cityError" required>
+        <mat-option>None</mat-option>
+        <mat-option *ngFor="let c of data.cities" [value]="c">{{c}}</mat-option>
+
+      </mat-select>
+      <mat-error *ngIf="cityError.invalid"> Select a city</mat-error>
+    </mat-form-field>
+    <!--<p>You selected: {{selectedCity}}</p>-->
+
+    <!-- <p>You selected: {{selectedCity}}</p>-->
+
+  </div>
+  <div class="filter_item">
+    <!--<mat-form-field class="example-full-width">
+      <mat-label>Sensor name</mat-label>
+      <input matInput placeholder="Ex. HUM Sensor" value="HUM Sensor">
+    </mat-form-field>-->
+    <mat-form-field>
+      <mat-label>Select a sensor</mat-label>
+      <mat-select [(value)]="selectedSensor" [formControl]="sensorError" required>
+        <mat-option>None</mat-option>
+        <mat-option *ngFor="let s of sensors" [value]="s">{{s}}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="sensorError.invalid"> Select a sensor</mat-error>
+    </mat-form-field>
+  </div>
+</div>
+
+<div mat-dialog-actions>
+  <button (click)="onNoClick()" class="close_btn" mat-button>Close</button>
+  <button (click)="update()" class="upd_btn" mat-button>Update</button>
+</div>
+<!-- [mat-dialog-close]="filter" -->

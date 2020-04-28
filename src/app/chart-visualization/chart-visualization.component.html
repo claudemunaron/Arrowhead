@@ -1,0 +1,28 @@
+<div class="chart_visualization_box">
+  <div class="chart">
+    <h2>{{sensorName}} - {{city}}</h2>
+    <canvas [chartType]="lineChartType"
+            [colors]="lineChartColors"
+            [datasets]="lineChartData"
+            [labels]="lineChartLabels"
+            [legend]="lineChartLegend"
+            [options]="lineChartOptions"
+            [plugins]="lineChartPlugins"
+            baseChart>
+    </canvas>
+    <br>
+    <!-- <p class = "xvis">Selected timerange: {{getFormattedDate()}}</p>-->
+
+  </div>
+
+  <div class="fun_opt">
+    <button (click)="openDialog()" aria-label="" color="primary" mat-mini-fab>
+      <mat-icon>create</mat-icon>
+    </button>
+    <button (click)="refresh()" aria-label="" color="primary" mat-mini-fab>
+      <mat-icon>cached</mat-icon>
+    </button>
+  </div>
+
+
+</div>
