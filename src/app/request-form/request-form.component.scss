@@ -29,6 +29,13 @@
   height: 100%;
 }
 
+mat-card{
+
+}
+.cardbox{
+  width: 100%;
+}
+
 mat-card-title {
   margin-bottom: 1em;
   color: #8C8C8C;
@@ -111,6 +118,18 @@ mat-checkbox {
 .close_btn {
   background-color: #F23838 !important;
   color: white;
+}
+
+@media (min-width: 1281px) {
+
+  /*.container div {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 40%;
+    margin-left: 5em;
+
+  }*/
+
 }
 
 

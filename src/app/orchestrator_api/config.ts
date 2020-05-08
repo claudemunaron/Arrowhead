@@ -3,3 +3,4 @@ export default {
   addressRequest: 'http://137.204.57.93:8443/serviceregistry/mgmt/'
 };
 
+

@@ -194,4 +194,11 @@ export class OrchestratorApiService {
       catchError(this.errorHandler)
     );
   }
+
+  getTimeZone(lat, lng) {
+    return this.http.get('http://api.timezonedb.com/v2.1/get-time-zone?key=AS89CMPR9VFF&format=json&by=position&lat='+lat+'&lng='+lng).pipe(
+      tap(data => console.log((JSON.stringify(data)))),
+      catchError(this.errorHandler)
+    );
+  }
 }

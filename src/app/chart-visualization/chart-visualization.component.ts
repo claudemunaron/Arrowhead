@@ -5,6 +5,8 @@ import {OrchestratorApiService} from "../orchestrator_api/orchestrator-api.servi
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {FormControl, Validators} from "@angular/forms";
 import {NotifierService} from "angular-notifier";
+import 'chartjs-plugin-annotation'
+
 
 export interface DialogData {
   date: FormControl;
@@ -20,14 +22,13 @@ export interface DialogData {
 
 
 export class ChartVisualizationComponent implements OnInit {
-
   @ViewChild(BaseChartDirective) lineChart: BaseChartDirective;
   @Output() messageEventLA = new EventEmitter<number>();
   @Output() messageEventLO = new EventEmitter<number>();
 
-
   messageLatitude = 0;
   messageLongitude = 0;
+  offset = 0;
 
   response: any;
   responseChart: any;
@@ -40,7 +41,6 @@ export class ChartVisualizationComponent implements OnInit {
   sensorUnit = "";
   sensorName: "";
   city: "";
-  sensorID: "";
   timeRange = "";
   filterDataDF: any = new Date();
   filterDataDT: any = new Date();
@@ -62,7 +62,16 @@ export class ChartVisualizationComponent implements OnInit {
       data: [],
       label: 'Sensor data',
       backgroundColor: '#1FBF74',
-      borderColor: '#097341'
+      borderColor: '#097341',
+    },
+    {
+      data: [],
+      label: 'Error',
+      backgroundColor: 'red',
+      borderColor: 'red',
+      type: "scatter",
+      pointStyle: "crossRot",
+      pointRadius: 5
     },
   ];
   lineChartLabels: Label[] = [];
@@ -71,16 +80,14 @@ export class ChartVisualizationComponent implements OnInit {
     legend: {
       display: true,
     },
-
     scales: {
       yAxes: [{
-        scaleLabel: {labelString: '', display: true},
+        display: true,
         ticks: {
           beginAtZero: true,
           stepSize: 5,
           autoSkip: false
         },
-
       }],
       xAxes: [{
         scaleLabel: {labelString: '', display: true},
@@ -108,11 +115,9 @@ export class ChartVisualizationComponent implements OnInit {
       }]
     }
   };
-  lineChartColors: Color[] = [
-    {},
-  ];
+  lineChartColors: Color[] = [];
   lineChartLegend = true;
-  lineChartPlugins = [];
+  lineChartPlugins = {};
   lineChartType = 'bar';
 
   constructor(private orchestrator: OrchestratorApiService, public dialog: MatDialog) {
@@ -131,47 +136,46 @@ export class ChartVisualizationComponent implements OnInit {
   ngOnInit(): void {
   }
 
-
   initConfig() {
     if (this.initialConfig.result && this.initialConfig.result.length > 0) {
       this.filter.city = this.initialConfig.result[0].FE_Site_ID;
       this.filter.sName = this.initialConfig.result[0].FE_Sensor_ID;
-      this.sendRequestUpdate();
+      this.messageLatitude = this.initialConfig.result[0].FE_Latitude;
+      this.messageLongitude = this.initialConfig.result[0].FE_Latitude;
+      this.filter.dF = new Date();
+      this.filter.dT = new Date();
+      this.filter.hF = "00:00";
+      this.filter.hT = "23:59";
+
+      this.getOffset(this.initialConfig.result[0].FE_Latitude, this.initialConfig.result[0].FE_Logitude);
+      let timeRange = this.getTimeRange(this.offset);
+      this.update(this.filter.sName, this.filter.city, timeRange);
     }
   }
 
-  changeConfig(city, sensor){
+  changeConfig(city, sensor) {
+    this.filter.dF = new Date();
+    this.filter.dT = new Date();
+    this.filter.hF = "00:00";
+    this.filter.hT = "23:59";
+
     this.filter.city = city;
     this.filter.sName = sensor;
-    this.sendRequestUpdate();
+    this.sendRequestUpdateSave();
+  }
+
+  sendRequestUpdateSave() {
+    let city = this.filter.city;
+    let sensor = this.filter.sName;
+    this.getCoordinates(sensor, city);
+    let timeRange = this.getTimeRange(this.offset);
+    this.update(sensor, city, timeRange);
   }
 
   refresh() {
     this.sendRequestUpdate();
   }
 
-  getCurrentDayTimeStamp() {
-    let currentData = new Date();
-    this.filter.dF = currentData;
-    this.filter.dT = currentData;
-    let year = currentData.getFullYear();
-    let month = currentData.getMonth() + 1;
-    let day = currentData.getUTCDate();
-
-    let hour = 0;
-    let minute = 0;
-    let second = 0;
-
-    this.filter.hF = "00:00";
-    this.filter.hT = "23:59";
-    let hourS = 23;
-    let minuteS = 59;
-    let secondS = 59;
-    let start = this.getUnixTimeStamp(year, month, day, hour, minute, second);
-    let stop = this.getUnixTimeStamp(year, month, day, hourS, minuteS, secondS);
-
-    return start + '_' + stop;
-  }
 
   getCities() {
     this.orchestrator.getCities()
@@ -203,6 +207,7 @@ export class ChartVisualizationComponent implements OnInit {
         this.response = response;
         this.messageLatitude = response.result[0].Latitude;
         this.messageLongitude = response.result[0].Longitude;
+        this.getOffset(this.messageLatitude, this.messageLongitude);
         this.sendMessage();
       },
       error => {
@@ -238,19 +243,36 @@ export class ChartVisualizationComponent implements OnInit {
       });
   }
 
+
+  getOffset(lat, lng) {
+    let o: any = 0;
+    this.orchestrator.getTimeZone(lat, lng)
+      .subscribe(response => {
+          console.log(response);
+          o = response;
+          this.offset = o.gmtOffset;
+
+          let city = this.filter.city;
+          let sensor = this.filter.sName;
+          let timeRange = this.getTimeRange(this.offset);
+          this.update(sensor, city, timeRange);
+        }
+      );
+  }
+
+
   sendRequestUpdate() {
-    let timeRange = this.getTimeRange();
     let city = this.filter.city;
     let sensor = this.filter.sName;
-
     this.getCoordinates(sensor, city);
+    let timeRange = this.getTimeRange(this.offset);
     this.update(sensor, city, timeRange);
   }
+
 
   update(sensor, city, timeRange) {
     this.orchestrator.getData(sensor, city, timeRange)
       .subscribe(response => {
-          console.log((JSON.stringify(response)));
           this.responseChart = response.result;
           this.drawChart();
         },
@@ -275,10 +297,6 @@ export class ChartVisualizationComponent implements OnInit {
     let dateChartTo = new Date(this.unixtimeT * 1000);
     this.addData(0, dateChartTo, '', '', '', '');
 
-    var prevData = new Date();
-    var prevH = -"";
-    var prevM = "";
-
     for (let e of this.responseChart) {
 
       let unix_timestamp = e.Meas_Timestamp;
@@ -287,38 +305,36 @@ export class ChartVisualizationComponent implements OnInit {
       var minutes = "0" + date.getMinutes();
       var seconds = "0" + date.getSeconds();
 
-      if (prevData == date && prevH == hours && prevM == minutes) {
 
-      } else {
-        // Will display time in 10:30:23 format
-        var formattedTime = date.toDateString() + '  ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+      // Will display time in 10:30:23 format
+      var formattedTime = date.toDateString() + '  ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 
-        this.sensorUnit = e.Meas_Unit;
-        this.sensorName = e.Sensor_Name;
-        this.city = e.Site_ID;
-        this.addData(e.Meas_Value, formattedTime, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit);
-
-      }
-      prevData = date;
-      prevH = hours;
-      prevM = minutes;
+      this.sensorUnit = e.Meas_Unit;
+      this.sensorName = e.Sensor_Name;
+      this.city = e.Site_ID;
+      this.addData(e.Meas_Value, formattedTime, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit);
     }
   }
 
   addData(data, label, sName, sID, site, mUnit) {
-    this.lineChart.chart.data.datasets.forEach((dataset) => {
-      dataset.data.push(data);
-    });
 
-    this.lineChart.chart.data.datasets.forEach((dataset) => {
+    /*this.lineChart.chart.data.datasets.forEach((dataset) => {
+     dataset.data.push(data);
+   });*/
+
+    this.lineChart.chart.data.datasets[0].data.push(data);
+    this.lineChart.chart.data.datasets[1].data.push(0);
+
+    /*this.lineChart.chart.data.datasets.forEach((dataset) => {
       dataset.label = 'Sensor name: ' + sName + " \n\n" + '   ' + mUnit;
-    });
+    });*/
 
+    this.lineChart.chart.data.datasets[0].label = 'Sensor name: ' + sName + " \n\n" + '   ' + mUnit;
     this.lineChartLabels.push(label);
   }
 
-  /*show selected time range*/
-  getFormattedDate() {
+
+  getTimeRange(offset) {
     /*Data From - Data to*/
     this.filterDataDF = new Date(this.filter.dF);
     this.filterDataDT = new Date(this.filter.dT);
@@ -331,7 +347,6 @@ export class ChartVisualizationComponent implements OnInit {
     let monthDT = this.filterDataDT.getMonth() + 1;
     let dayDT = this.filterDataDT.getDate();
 
-
     let hoursF = parseInt(this.filter.hF.split(":")[0]);
     let minutesF = parseInt(this.filter.hF.split(":")[1]);
     let secondF = 0;
@@ -339,41 +354,15 @@ export class ChartVisualizationComponent implements OnInit {
     let hoursT = parseInt(this.filter.hT.split(":")[0]);
     let minutesT = parseInt(this.filter.hT.split(":")[1]);
     let secondT = 0;
-
-    return dayDF + '/' + monthDF + '/' + yearDF + ' ' + hoursF + ':' + minutesF + ' - ' +
-      dayDT + '/' + monthDT + '/' + yearDT + ' ' + hoursT + ':' + minutesT;
-  }
-
-  getTimeRange() {
-    /*Data From - Data to*/
-    this.filterDataDF = new Date(this.filter.dF);
-    this.filterDataDT = new Date(this.filter.dT);
-
-    let yearDF = this.filterDataDF.getFullYear();
-    let monthDF = this.filterDataDF.getMonth() + 1;
-    let dayDF = this.filterDataDF.getDate();
-
-    let yearDT = this.filterDataDT.getFullYear();
-    let monthDT = this.filterDataDT.getMonth() + 1;
-    let dayDT = this.filterDataDT.getDate();
-
-
-    let hoursF = parseInt(this.filter.hF.split(":")[0]);
-    let minutesF = parseInt(this.filter.hF.split(":")[1]);
-    let secondF = 0;
-
-    let hoursT = parseInt(this.filter.hT.split(":")[0]);
-    let minutesT = parseInt(this.filter.hT.split(":")[1]);
-    let secondT = 0;
-
 
     let start = this.getUnixTimeStamp(yearDF, monthDF, dayDF, hoursF, minutesF, secondF);
-    this.unixtimeF = start - 7200;
+    this.unixtimeF = start - offset;
     let stop = this.getUnixTimeStamp(yearDT, monthDT, dayDT, hoursT, minutesT, secondT);
-    this.unixtimeT = stop - 7200;
+    this.unixtimeT = stop - offset;
 
     return this.unixtimeF + '_' + this.unixtimeT;
   }
+
 
   public getUnixTimeStamp(year, month, day, hour, minute, second) {
     let datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
@@ -441,7 +430,6 @@ export class DialogFil {
     }
   }
 
-
   changeCity(event) {
     this.getSensorForCity(this.selectedCity);
   }
@@ -482,7 +470,6 @@ export class DialogFil {
     let monthDT = filterDataDT.getMonth() + 1;
     let dayDT = filterDataDT.getDate();
 
-
     let hoursF = parseInt(this.start_time.split(":")[0]);
     let minutesF = parseInt(this.start_time.split(":")[1]);
     let secondF = 0;
@@ -490,7 +477,6 @@ export class DialogFil {
     let hoursT = parseInt(this.end_time.split(":")[0]);
     let minutesT = parseInt(this.end_time.split(":")[1]);
     let secondT = 0;
-
 
     let start = this.getUnixTimeStamp(yearDF, monthDF, dayDF, hoursF, minutesF, secondF) - 7200;
     let stop = this.getUnixTimeStamp(yearDT, monthDT, dayDT, hoursT, minutesT, secondT) - 7200;

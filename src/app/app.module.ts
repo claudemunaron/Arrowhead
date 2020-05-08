@@ -26,6 +26,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {ChartsModule} from 'ng2-charts';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatSelectModule} from '@angular/material/select';
+import {ChartAnnotation} from 'chartjs-plugin-annotation';
 
 
 @NgModule({
@@ -62,6 +63,7 @@ import {MatSelectModule} from '@angular/material/select';
     MatExpansionModule,
     MatSelectModule,
     FormsModule,
+
 
 
   ],

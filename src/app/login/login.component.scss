@@ -41,6 +41,7 @@ mat-form-field {
 .mat-flat-button.mat-primary, .mat-raised-button.mat-primary, .mat-fab.mat-primary, .mat-mini-fab.mat-primary {
   width: 60% !important;
   height: 50px !important;
+  max-width: 250px;
 }
 
 
