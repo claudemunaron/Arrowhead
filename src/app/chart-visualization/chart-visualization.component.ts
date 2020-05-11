@@ -71,7 +71,7 @@ export class ChartVisualizationComponent implements OnInit {
       borderColor: 'red',
       type: "scatter",
       pointStyle: "crossRot",
-      pointRadius: 5
+      pointRadius: 9
     },
   ];
   lineChartLabels: Label[] = [];
@@ -322,14 +322,22 @@ export class ChartVisualizationComponent implements OnInit {
      dataset.data.push(data);
    });*/
 
-    this.lineChart.chart.data.datasets[0].data.push(data);
-    this.lineChart.chart.data.datasets[1].data.push(0);
-
     /*this.lineChart.chart.data.datasets.forEach((dataset) => {
-      dataset.label = 'Sensor name: ' + sName + " \n\n" + '   ' + mUnit;
-    });*/
+    dataset.label = 'Sensor name: ' + sName + " \n\n" + '   ' + mUnit;
+  });*/
 
-    this.lineChart.chart.data.datasets[0].label = 'Sensor name: ' + sName + " \n\n" + '   ' + mUnit;
+
+    if (data == -404000 || data == -401000) {
+      this.lineChart.chart.data.datasets[1].data.push(0);
+      //this.lineChart.chart.data.datasets[1].label = 'Sensor name: ' + sName + " \n\n" + 'ERROR';
+      this.lineChart.chart.data.datasets[0].data.push(null);
+
+    } else {
+      this.lineChart.chart.data.datasets[0].data.push(data);
+      this.lineChart.chart.data.datasets[0].label = 'Sensor name: ' + sName + " \n\n" + '   ' + mUnit;
+      this.lineChart.chart.data.datasets[1].data.push(null);
+    }
+
     this.lineChartLabels.push(label);
   }
 
