@@ -35,6 +35,7 @@ export class ChartVisualizationComponent implements OnInit {
   initialConfig: any;
   cities: string[] = [];
   sensors: string[] = [];
+  errorList: any[] = [];
   unixtimeF: any = 0;
   unixtimeT: any = 0;
 
@@ -42,6 +43,8 @@ export class ChartVisualizationComponent implements OnInit {
   sensorName: "";
   city: "";
   timeRange = "";
+  public currentError = "";
+  public currentErrorDescr = "";
   filterDataDF: any = new Date();
   filterDataDT: any = new Date();
 
@@ -60,7 +63,7 @@ export class ChartVisualizationComponent implements OnInit {
   lineChartData: ChartDataSets[] = [
     {
       data: [],
-      label: 'Sensor data',
+      // label: 'Sensor data',
       backgroundColor: '#1FBF74',
       borderColor: '#097341',
     },
@@ -71,7 +74,8 @@ export class ChartVisualizationComponent implements OnInit {
       borderColor: 'red',
       type: "scatter",
       pointStyle: "crossRot",
-      pointRadius: 9
+      pointRadius: 9,
+
     },
   ];
   lineChartLabels: Label[] = [];
@@ -79,6 +83,34 @@ export class ChartVisualizationComponent implements OnInit {
     responsive: true,
     legend: {
       display: true,
+    },
+    tooltips: {
+      callbacks: {
+        label: function (tooltipItem, data) {
+          var label = data.datasets[tooltipItem.datasetIndex].label || '';
+          let s = [];
+          if (label) {
+            s = label.split('-');
+          }
+          return s[0];
+        },
+        footer: function (tooltipItems, data) {
+          var value = 0;
+          let s = [];
+          tooltipItems.forEach(function (tooltipItem) {
+            var label = data.datasets[tooltipItem.datasetIndex].label || '';
+            s = label.split('-');
+            value += data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+          });
+          if(s[1]){
+            return 'Sensor measurement: ' + value + " " + s[1];
+          }
+          else {
+            return 'Sensor measurement: ' + value;
+          }
+
+        }
+      }
     },
     scales: {
       yAxes: [{
@@ -134,6 +166,15 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.orchestrator.getErrorList().subscribe(response => {
+        this.errorList = response.result;
+
+      },
+      (error) => {
+        console.log(error);
+      });
+
+
   }
 
   initConfig() {
@@ -317,24 +358,17 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
   addData(data, label, sName, sID, site, mUnit) {
+    let e = this.errorList.filter((e) => e.error_value == data);
+    if (e && e.length > 0) {
+      this.currentError = e[0].error_code;
+      this.currentErrorDescr = e[0].error_description;
 
-    /*this.lineChart.chart.data.datasets.forEach((dataset) => {
-     dataset.data.push(data);
-   });*/
-
-    /*this.lineChart.chart.data.datasets.forEach((dataset) => {
-    dataset.label = 'Sensor name: ' + sName + " \n\n" + '   ' + mUnit;
-  });*/
-
-
-    if (data == -404000 || data == -401000) {
       this.lineChart.chart.data.datasets[1].data.push(0);
-      //this.lineChart.chart.data.datasets[1].label = 'Sensor name: ' + sName + " \n\n" + 'ERROR';
+      this.lineChart.chart.data.datasets[1].label = 'Error:' + this.currentError + ' ' + this.currentErrorDescr;
       this.lineChart.chart.data.datasets[0].data.push(null);
-
     } else {
       this.lineChart.chart.data.datasets[0].data.push(data);
-      this.lineChart.chart.data.datasets[0].label = 'Sensor name: ' + sName + " \n\n" + '   ' + mUnit;
+      this.lineChart.chart.data.datasets[0].label = 'Sensor name: ' + sName + '-' + mUnit;
       this.lineChart.chart.data.datasets[1].data.push(null);
     }
 
@@ -466,7 +500,7 @@ export class DialogFil {
     )
   }
 
-  checkDate() {
+  checkDate() {/*48h*/
     let filterDataDF = new Date(this.selectedDateFrom);
     let filterDataDT = new Date(this.selectedDateTo);
 
@@ -486,8 +520,8 @@ export class DialogFil {
     let minutesT = parseInt(this.end_time.split(":")[1]);
     let secondT = 0;
 
-    let start = this.getUnixTimeStamp(yearDF, monthDF, dayDF, hoursF, minutesF, secondF) - 7200;
-    let stop = this.getUnixTimeStamp(yearDT, monthDT, dayDT, hoursT, minutesT, secondT) - 7200;
+    let start = this.getUnixTimeStamp(yearDF, monthDF, dayDF, hoursF, minutesF, secondF);
+    let stop = this.getUnixTimeStamp(yearDT, monthDT, dayDT, hoursT, minutesT, secondT);
 
     let startDate = new Date(start * 1000);
     let stopDate = new Date(stop * 1000);

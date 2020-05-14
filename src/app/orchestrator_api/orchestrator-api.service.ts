@@ -201,4 +201,11 @@ export class OrchestratorApiService {
       catchError(this.errorHandler)
     );
   }
+
+  getErrorList(){
+    return this.http.get(config.addressData + 'error-list').pipe(
+      tap(data => console.log((JSON.stringify(data)))),
+      catchError(this.errorHandler)
+    );
+  }
 }
