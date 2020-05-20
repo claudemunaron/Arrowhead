@@ -102,10 +102,9 @@ export class ChartVisualizationComponent implements OnInit {
             s = label.split('-');
             value += data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
           });
-          if(s[1]){
+          if (s[1]) {
             return 'Sensor measurement: ' + value + " " + s[1];
-          }
-          else {
+          } else {
             return 'Sensor measurement: ' + value;
           }
 
@@ -155,43 +154,45 @@ export class ChartVisualizationComponent implements OnInit {
   constructor(private orchestrator: OrchestratorApiService, public dialog: MatDialog) {
     this.getCities();
     this.getSensors();
-
-    this.orchestrator.getInitialConfig().subscribe(response => {
-        this.initialConfig = response;
-        this.initConfig();
-      },
-      (error) => {
-        console.log(error);
-      });
+    this.initConfig();
   }
+
 
   ngOnInit(): void {
     this.orchestrator.getErrorList().subscribe(response => {
         this.errorList = response.result;
-
       },
       (error) => {
         console.log(error);
       });
-
-
   }
 
-  initConfig() {
-    if (this.initialConfig.result && this.initialConfig.result.length > 0) {
-      this.filter.city = this.initialConfig.result[0].FE_Site_ID;
-      this.filter.sName = this.initialConfig.result[0].FE_Sensor_ID;
-      this.messageLatitude = this.initialConfig.result[0].FE_Latitude;
-      this.messageLongitude = this.initialConfig.result[0].FE_Latitude;
-      this.filter.dF = new Date();
-      this.filter.dT = new Date();
-      this.filter.hF = "00:00";
-      this.filter.hT = "23:59";
 
-      this.getOffset(this.initialConfig.result[0].FE_Latitude, this.initialConfig.result[0].FE_Logitude);
-      let timeRange = this.getTimeRange(this.offset);
-      this.update(this.filter.sName, this.filter.city, timeRange);
-    }
+  initConfig() {
+
+    this.orchestrator.getInitialConfig()
+      .subscribe(response => {
+          this.initialConfig = response;
+          if (this.initialConfig.result && this.initialConfig.result.length > 0) {
+            this.filter.city = this.initialConfig.result[0].FE_Site_ID;
+            this.filter.sName = this.initialConfig.result[0].FE_Sensor_ID;
+            this.messageLatitude = this.initialConfig.result[0].FE_Latitude;
+            this.messageLongitude = this.initialConfig.result[0].FE_Longitude;
+
+            this.filter.dF = new Date();
+            this.filter.dT = new Date();
+            this.filter.hF = "00:00";
+            this.filter.hT = "23:59";
+
+            this.getOffset(this.initialConfig.result[0].FE_Latitude, this.initialConfig.result[0].FE_Longitude);
+
+          }
+        },
+        (error) => {
+          console.log(error);
+        });
+
+
   }
 
   changeConfig(city, sensor) {
@@ -218,7 +219,7 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
 
-  getCities() {
+  async getCities() {
     this.orchestrator.getCities()
       .subscribe(response => {
           this.response = response;
@@ -230,7 +231,7 @@ export class ChartVisualizationComponent implements OnInit {
       };
   }
 
-  getSensors() {
+  async getSensors() {
     this.orchestrator.getSensors()
       .subscribe(response => {
           this.response = response;
@@ -242,7 +243,7 @@ export class ChartVisualizationComponent implements OnInit {
       };
   }
 
-  getCoordinates(sID, city) {
+  async getCoordinates(sID, city) {
     this.orchestrator.getCoordinates(sID, city).subscribe(
       response => {
         this.response = response;
@@ -286,19 +287,18 @@ export class ChartVisualizationComponent implements OnInit {
 
 
   getOffset(lat, lng) {
-    let o: any = 0;
     this.orchestrator.getTimeZone(lat, lng)
       .subscribe(response => {
-          console.log(response);
-          o = response;
-          this.offset = o.gmtOffset;
-
-          let city = this.filter.city;
-          let sensor = this.filter.sName;
-          let timeRange = this.getTimeRange(this.offset);
-          this.update(sensor, city, timeRange);
+          this.offset = response.gmtOffset;
+          this.visualizationUpdate();
         }
       );
+
+  }
+
+  visualizationUpdate() {
+    let timeRange = this.getTimeRange(this.offset);
+    this.update(this.filter.sName, this.filter.city, timeRange);
   }
 
 
@@ -306,8 +306,8 @@ export class ChartVisualizationComponent implements OnInit {
     let city = this.filter.city;
     let sensor = this.filter.sName;
     this.getCoordinates(sensor, city);
-    let timeRange = this.getTimeRange(this.offset);
-    this.update(sensor, city, timeRange);
+    /*let timeRange = this.getTimeRange(this.offset);
+    this.update(sensor, city, timeRange);*/
   }
 
 

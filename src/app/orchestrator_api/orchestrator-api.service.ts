@@ -153,12 +153,12 @@ export class OrchestratorApiService {
     );
   }
 
-  getCities() {
-    return this.http.get(config.addressData + 'city-list').pipe(
-      tap(data => console.log((JSON.stringify(data)))),
-      catchError(this.errorHandler)
-    );
-  }
+ getCities() {
+   return this.http.get(config.addressData + 'city-list').pipe(
+     tap(data => console.log((JSON.stringify(data)))),
+     catchError(this.errorHandler)
+   );
+ }
 
   getSensors() {
     return this.http.get(config.addressData + 'sensor-list').pipe(
@@ -196,13 +196,16 @@ export class OrchestratorApiService {
   }
 
   getTimeZone(lat, lng) {
-    return this.http.get('http://api.timezonedb.com/v2.1/get-time-zone?key=AS89CMPR9VFF&format=json&by=position&lat='+lat+'&lng='+lng).pipe(
+    return this.http.get('http://api.timezonedb.com/v2.1/get-time-zone?key=AS89CMPR9VFF&format=json&by=position&lat=' + lat + '&lng=' + lng).pipe(
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
     );
+
+    /*return this.http.get('http://api.timezonedb.com/v2.1/get-time-zone?key=AS89CMPR9VFF&format=json&by=position&lat='+lat+'&lng='+lng)
+      .pipe(map((data: any) => data.json()));*/
   }
 
-  getErrorList(){
+  getErrorList() {
     return this.http.get(config.addressData + 'error-list').pipe(
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
