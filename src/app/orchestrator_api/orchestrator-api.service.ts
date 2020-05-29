@@ -2,19 +2,32 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {Observable, throwError} from 'rxjs';
 import {catchError, tap} from 'rxjs/operators';
-import {default as config} from './config';
+
 
 @Injectable({
   providedIn: 'root'
 })
+
+
 export class OrchestratorApiService {
 
 
   errorHandler: (err: any) => Observable<any>;
-
+  addressData: string;
 
   constructor(private http: HttpClient) {
+    this.getIP().subscribe((response) => {
+      let s = response.split('.');
+      if (s[0] && s[0] == 91 && s[1] && s[1] == 218) {
+        localStorage.setItem('addressData', 'http://vitalaht.cloud.reply.eu:5000/');
+        this.addressData = localStorage.getItem('addressData');
+      } else {
+        localStorage.setItem('addressData', 'http://91.218.224.188:5000/');
+        this.addressData = localStorage.getItem('addressData');
+      }
+    });
 
+    this.addressData = localStorage.getItem('addressData');
     this.errorHandler = errorHandler;
 
 
@@ -26,13 +39,12 @@ export class OrchestratorApiService {
         errorMessage = 'Error code ' + err.status +
           ' message error: ' + err.message;
       }
-
       return throwError(errorMessage);
     }
   }
 
 
-  orchestration(): Observable<string> {
+  orchestration(selectedService): Observable<string> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
@@ -41,75 +53,25 @@ export class OrchestratorApiService {
     };
 
     const content = {
-      commands: {
-        additionalProp1: "string",
-        additionalProp2: "string",
-        additionalProp3: "string"
-      },
       orchestrationFlags: {
-        additionalProp1: true,
-        additionalProp2: true,
-        additionalProp3: true
+        overrideStore: true,
       },
-      preferredProviders: [
-        {
-          providerCloud: {
-            authenticationInfo: "string",
-            gatekeeperRelayIds: [
-              0
-            ],
-            gatewayRelayIds: [
-              0
-            ],
-            name: "string",
-            neighbor: true,
-            operator: "string",
-            secure: true
-          },
-          providerSystem: {
-            address: "string",
-            authenticationInfo: "string",
-            port: 0,
-            systemName: "string"
-          }
-        }
-      ],
+
       requestedService: {
         interfaceRequirements: [
-          "string"
+          "HTTP-INSECURE-JSON"
         ],
-        maxVersionRequirement: 0,
-        metadataRequirements: {
-          additionalProp1: "string",
-          additionalProp2: "string",
-          additionalProp3: "string"
-        },
-        minVersionRequirement: 0,
-        pingProviders: true,
         securityRequirements: [
           "NOT_SECURE"
         ],
-        serviceDefinitionRequirement: "string",
-        versionRequirement: 0
+        serviceDefinitionRequirement: selectedService,
       },
-      requesterCloud: {
-        authenticationInfo: "string",
-        gatekeeperRelayIds: [
-          0
-        ],
-        gatewayRelayIds: [
-          0
-        ],
-        name: "string",
-        neighbor: true,
-        operator: "string",
-        secure: true
-      },
+
       requesterSystem: {
-        address: "127.0.0.1",
-        authenticationInfo: "testkey",
+        address: "91.218.224.188",
+        authenticationInfo: "",
         port: 5000,
-        systemName: "testProvider"
+        systemName: "cr_test_consumer"
       }
     };
 
@@ -119,7 +81,6 @@ export class OrchestratorApiService {
       }),
       catchError(this.errorHandler)
     );
-
   }
 
   /*REQUEST*/
@@ -135,7 +96,8 @@ export class OrchestratorApiService {
   }
 
   getAllData(): Observable<string> {
-    return this.http.get(config.addressData + 'all-data', {observe: 'response'}).pipe(
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.get(this.addressData + 'all-data', {observe: 'response'}).pipe(
       tap(data => {
           console.log((JSON.stringify(data)));
         }
@@ -147,49 +109,56 @@ export class OrchestratorApiService {
 
 
   getData(sensorID, city, time_range) {
-    return this.http.get(config.addressData + 'formquery/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time_range).pipe(
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.get(this.addressData + 'formquery/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time_range).pipe(
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
     );
   }
 
- getCities() {
-   return this.http.get(config.addressData + 'city-list').pipe(
-     tap(data => console.log((JSON.stringify(data)))),
-     catchError(this.errorHandler)
-   );
- }
+  getCities() {
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.get(this.addressData + 'city-list').pipe(
+      tap(data => console.log((JSON.stringify(data)))),
+      catchError(this.errorHandler)
+    );
+  }
 
   getSensors() {
-    return this.http.get(config.addressData + 'sensor-list').pipe(
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.get(this.addressData + 'sensor-list').pipe(
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
     );
   }
 
   getSensorsCity(city) {
-    return this.http.get(config.addressData + 'city/' + city + '/sensor-list').pipe(
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.get(this.addressData + 'city/' + city + '/sensor-list').pipe(
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
     );
   }
 
   saveConfig(option) {
-    return this.http.post(config.addressData + 'config-update', option, {observe: 'response'}).pipe(
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.post(this.addressData + 'config-update', option, {observe: 'response'}).pipe(
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
     );
   }
 
   getCoordinates(sensorID, city) {
-    return this.http.get(config.addressData + 'city/' + city + '/sensor-id/' + sensorID + '/get-coordinates').pipe(
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.get(this.addressData + 'city/' + city + '/sensor-id/' + sensorID + '/get-coordinates').pipe(
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
     );
   }
 
   getInitialConfig() {
-    return this.http.get(config.addressData + 'get-config').pipe(
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.get(this.addressData + 'get-config').pipe(
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
     );
@@ -200,13 +169,18 @@ export class OrchestratorApiService {
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
     );
-
-    /*return this.http.get('http://api.timezonedb.com/v2.1/get-time-zone?key=AS89CMPR9VFF&format=json&by=position&lat='+lat+'&lng='+lng)
-      .pipe(map((data: any) => data.json()));*/
   }
 
   getErrorList() {
-    return this.http.get(config.addressData + 'error-list').pipe(
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.get(this.addressData + 'error-list').pipe(
+      tap(data => console.log((JSON.stringify(data)))),
+      catchError(this.errorHandler)
+    );
+  }
+
+  getIP() {
+    return this.http.get('https://api.ipify.org/', {responseType: 'text'}).pipe(
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
     );

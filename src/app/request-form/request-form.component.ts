@@ -27,7 +27,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   /*Request form*/
   selectedPType = 'mqtt';
   selectedLocation = 'to';
-  selectedSID = '857';
+  selectedService = 'vital_co2_sensor';
   requestResponse: any;
 
 
@@ -78,13 +78,24 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
               notifierService: NotifierService) {
     this.notifier = notifierService;
 
-    this.orchestrator.getInitialConfig().subscribe(response => {
-        this.initialConfig = response;
-        this.initConfig();
-      },
-      (error) => {
-        console.log(error);
-      });
+    this.orchestrator.getIP().subscribe((response) => {
+      let s = response.split('.');
+      if (s[0] && s[0] == 91 && s[1] && s[1] == 218) {
+        localStorage.setItem('addressData', 'http://vitalaht.cloud.reply.eu:5000/');
+      } else {
+        localStorage.setItem('addressData', 'http://91.218.224.188:5000/');
+      }
+
+      this.orchestrator.getInitialConfig().subscribe(response => {
+          this.initialConfig = response;
+          this.initConfig();
+        },
+        (error) => {
+          console.log(error);
+        });
+    });
+
+
   }
 
   ngOnInit() {
@@ -93,8 +104,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       selected: this.formBuilder.array([])
     });
 
-    this.getCities();
-    this.getSensors();
   }
 
   ngAfterViewInit() {
@@ -148,7 +157,8 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
     const selected = <FormArray>this.responseFormGroup.get('selected') as FormArray;
     if (event.checked) {
       selected.push(new FormControl(event.source.value));
-      this.checkedElement.push((event.source.value).toString());
+      this.checkedElement.push((event.source.value));
+      console.log(this.checkedElement);
     } else {
       const i = selected.controls.findIndex(x => x.value === event.source.value);
       selected.removeAt(i);
@@ -157,10 +167,10 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
   submitRequest() {
-    //this.options = [];
-    // this.checkedElement = [];
+    this.options = [];
+    this.checkedElement = [];
 
-    this.orchestrator.submitRequest(this.selectedSID)
+    /*this.orchestrator.submitRequest(this.selectedSID)
       .subscribe(response => {
           this.notifier.notify('success', "Your request has been successfully submitted. ");
           this.requestResponse = response.body;
@@ -173,18 +183,30 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
         },
         (error) => {
           this.notifier.notify('error', " " + error);
+        })*/
+
+    this.orchestrator.orchestration(this.selectedService)
+      .subscribe(response => {
+          this.notifier.notify('success', "Your request has been successfully submitted. ");
+          this.requestResponse = response;
+          for (let r of this.requestResponse.response) {
+            this.options.push(r);
+          }
+
+        },
+        (error) => {
+          this.notifier.notify('error', " " + error);
         })
   }
 
 
   save() {
     this.savedElement = [...this.checkedElement];
-
     if (this.savedElement.length > 0) {
-
       for (let s of this.savedElement) {
         let optionBody = this.options.filter(
-          (o) => o.metadata.FE_Sensor_ID === s
+          (o) =>
+            o.metadata.FE_Sensor_ID == s.FE_Sensor_ID && o.metadata.FE_Site_ID == s.FE_Site_ID
         );
         this.postUpdate(optionBody[0]);
       }
@@ -203,10 +225,9 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
             this.panelOpenState = !this.panelOpenState;
             this.charChild.getCities();
             let sensor = toConfig.metadata.FE_Sensor_ID;
-            let city  = toConfig.metadata.FE_Site_ID;
-            this.charChild.changeConfig(city,sensor);
+            let city = toConfig.metadata.FE_Site_ID;
+            this.charChild.changeConfig(city, sensor);
             this.getCities();
-
 
             this.notifier.notify('success', 'Success: ' + this.response.message);
           } else {

@@ -7,7 +7,7 @@
     </mat-expansion-panel-header>
 
     <div class="container">
-      <div  class="cardbox">
+      <div class="cardbox">
         <mat-card>
           <mat-card-title> Request</mat-card-title>
           <mat-card-content>
@@ -17,9 +17,22 @@
              </mat-form-field> -->
             <div class="card_content">
               <mat-form-field>
-                <mat-label>Provider type</mat-label>
+                <mat-label>Provider Type</mat-label>
                 <mat-select [(value)]="selectedPType">
                   <mat-option value="mqtt">MQTT</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Service Definition</mat-label>
+                <mat-select [(value)]="selectedService">
+                  <mat-option value="vital_co2_sensor">vital_co2_sensor</mat-option>
+                  <mat-option value="vital_no2_sensor">vital_no2_sensor</mat-option>
+                  <mat-option value="vital_temperature_sensor">vital_temperature_sensor</mat-option>
+                  <mat-option value="vital_humidity_sensor">vital_humidity_sensor</mat-option>
+                  <mat-option value="vital_o3_sensor">vital_o3_sensor</mat-option>
+                  <mat-option value="vital_pm10_sensor">vital_pm10_sensor</mat-option>
+                  <mat-option value="vital_pm25_sensor">vital_pm25_sensor</mat-option>
                 </mat-select>
               </mat-form-field>
 
@@ -28,17 +41,6 @@
                 <mat-select [(value)]="selectedLocation">
                   <mat-option value="to">Torino</mat-option>
                   <mat-option value="mi">Milano</mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field>
-                <mat-label>Search ID</mat-label>
-                <mat-select [(value)]="selectedSID">
-                  <mat-option value="857">857</mat-option>
-                  <mat-option value="858">858</mat-option>
-                  <mat-option value="863">863</mat-option>
-                  <mat-option value="864">864</mat-option>
-
                 </mat-select>
               </mat-form-field>
             </div>
@@ -53,13 +55,14 @@
           <mat-card-title> Response</mat-card-title>
           <mat-card-content>
             <div *ngFor="let o of options; let i = index">
-              <mat-checkbox (change)="onChange($event)" [value]="o.metadata.FE_Sensor_ID"
+              <mat-checkbox (change)="onChange($event)" [value]="o.metadata"
                             color="primary">
                 {{o.metadata.FE_Sensor_Name }}
                 - {{o.metadata.FE_Meas_Unit}} -
                 {{o.metadata.FE_Site_ID}} -
                 {{o.metadata.FE_Protoc_Type}}
               </mat-checkbox>
+
             </div>
           </mat-card-content>
           <div class="btn_section">

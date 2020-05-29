@@ -14,8 +14,8 @@ export interface DialogData {
   sensors: string[];
 }
 
-let currentError: string[] = [];
-export default currentError
+let currentLabel: string[] = [];
+export default currentLabel
 
 @Component({
   selector: 'app-chart-visualization',
@@ -46,7 +46,7 @@ export class ChartVisualizationComponent implements OnInit {
   sensorName: "";
   city: "";
   timeRange = "";
-  public currentError = "";
+
   public currentErrorDescr = "";
   filterDataDF: any = new Date();
   filterDataDT: any = new Date();
@@ -90,30 +90,28 @@ export class ChartVisualizationComponent implements OnInit {
     tooltips: {
       callbacks: {
         label: function (tooltipItem, data) {
-          console.log('error ' + currentError);
-          var label = data.datasets[tooltipItem.datasetIndex].label || '';
-          var error = currentError[tooltipItem.index];
+          //var label = data.datasets[tooltipItem.datasetIndex].label || '';
+          var label = currentLabel[tooltipItem.index];
           let s = [];
           if (label) {
             s = label.split('-');
           }
-          return /*s[0] +*/  error;
+          return s[0];
         },
         footer: function (tooltipItems, data) {
           var value = 0;
           let s = [];
           tooltipItems.forEach(function (tooltipItem) {
-            var label = data.datasets[tooltipItem.datasetIndex].label || '';
+            //  var label = data.datasets[tooltipItem.datasetIndex].label || '';
+            var label = currentLabel[tooltipItem.index];
             s = label.split('-');
             value += data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
           });
           if (s[1]) {
             return 'Sensor measurement: ' + value + " " + s[1];
           } else {
-            // return 'Sensor measurement: ' + value ;
             return '';
           }
-
         }
       }
     },
@@ -124,9 +122,7 @@ export class ChartVisualizationComponent implements OnInit {
           beginAtZero: true,
           stepSize: 5,
           autoSkip: false,
-          yLabel: "prova"
         },
-
       }],
       xAxes: [{
         scaleLabel: {labelString: '', display: true},
@@ -135,7 +131,6 @@ export class ChartVisualizationComponent implements OnInit {
           gridLines: {
             display: true
           },
-
         },
         time: {
           autoSkip: false,
@@ -194,14 +189,11 @@ export class ChartVisualizationComponent implements OnInit {
             this.filter.hT = "23:59";
 
             this.getOffset(this.initialConfig.result[0].FE_Latitude, this.initialConfig.result[0].FE_Longitude);
-
           }
         },
         (error) => {
           console.log(error);
         });
-
-
   }
 
   changeConfig(city, sensor) {
@@ -302,7 +294,6 @@ export class ChartVisualizationComponent implements OnInit {
           this.visualizationUpdate();
         }
       );
-
   }
 
   visualizationUpdate() {
@@ -336,7 +327,7 @@ export class ChartVisualizationComponent implements OnInit {
     this.lineChart.chart.data.datasets.forEach((dataset) => {
       dataset.data = [];
     });   /*Refresh data*/
-    currentError = [];
+    currentLabel = [];
     this.lineChartLabels = [];  /*Refresh label*/
     let index = 0;
     /*timerange from - to*/
@@ -370,20 +361,16 @@ export class ChartVisualizationComponent implements OnInit {
   addData(data, label, sName, sID, site, mUnit) {
     let e = this.errorList.filter((e) => e.error_value == data);
     if (e && e.length > 0) {
-      //currentError = e[0].error_code;
-      // alert(e[0].error_code);
-      this.currentErrorDescr = e[0].error_description;
-
       this.lineChart.chart.data.datasets[1].data.push(0);
       this.lineChart.chart.data.datasets[1].label = 'Error';
       let l = 'Error:' + e[0].error_code + ' ' + e[0].error_description;
-      currentError.push(l);
+      currentLabel.push(l);
       this.lineChart.chart.data.datasets[0].data.push(null);
     } else {
       this.lineChart.chart.data.datasets[0].data.push(data);
-      this.lineChart.chart.data.datasets[0].label = 'Sensor name: ' + sName + '-' + mUnit;
+      this.lineChart.chart.data.datasets[0].label = 'Sensor name: ' + sName;
       let l = 'Sensor name: ' + sName + '-' + mUnit;
-      currentError.push(l);
+      currentLabel.push(l);
       this.lineChart.chart.data.datasets[1].data.push(null);
     }
 
