@@ -3,9 +3,9 @@ import {NgModule} from '@angular/core';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatToolbarModule} from '@angular/material/toolbar';
 import {ToolbarComponent} from './toolbar/toolbar.component';
-import {RequestFormComponent} from './request-form/request-form.component';
+import {RequestDialog, RequestFormComponent} from './request-form/request-form.component';
 import {MatCardModule} from "@angular/material/card";
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {MatInputModule} from '@angular/material/input';
@@ -26,7 +26,9 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {ChartsModule} from 'ng2-charts';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatSelectModule} from '@angular/material/select';
-import {ChartAnnotation} from 'chartjs-plugin-annotation';
+import {MatTableModule} from "@angular/material/table";
+import {MatPaginatorModule} from "@angular/material/paginator";
+import {MatStepperModule} from '@angular/material/stepper';
 
 
 @NgModule({
@@ -37,8 +39,8 @@ import {ChartAnnotation} from 'chartjs-plugin-annotation';
     LoginComponent,
     HomeComponent,
     ChartVisualizationComponent,
-    DialogFil
-
+    DialogFil,
+    RequestDialog
   ],
   imports: [
     BrowserModule,
@@ -63,9 +65,9 @@ import {ChartAnnotation} from 'chartjs-plugin-annotation';
     MatExpansionModule,
     MatSelectModule,
     FormsModule,
-
-
-
+    MatTableModule,
+    MatPaginatorModule,
+    MatStepperModule
   ],
   providers: [
     MatDatepickerModule

@@ -1,16 +1,50 @@
 .container {
+  width: 100%;
   display: flex;
   justify-content: center !important;
-  margin: 2em;
-  margin-left: 10%;
+}
+
+.exit_button {
+  float: right;
+  margin-bottom: 5em;
+  margin-left: 2em;
+}
+
+.add_dialog {
+  float: right;
+}
+
+#cls {
+  outline: none !important;
+  background-color: whitesmoke;
+}
+
+*:focus {
+  outline: none !important;
+}
+
+#cls {
+  outline: none !important;
+  background-color: transparent !important;
 }
 
 .container div {
-  flex-grow: 0;
-  flex-shrink: 0;
-  flex-basis: 35%;
   margin: 1em;
+  flex-basis: 100%;
+}
 
+.content {
+  display: flex;
+}
+
+#sensor_table {
+  flex-grow: 4; /* default 0 */
+  flex-basis: 90%;
+
+}
+
+#map {
+  flex-grow: 2;
 }
 
 .mat-expansion-panel-header {
@@ -29,10 +63,8 @@
   height: 100%;
 }
 
-mat-card{
 
-}
-.cardbox{
+.cardbox {
   width: 100%;
 }
 
@@ -47,16 +79,27 @@ mat-card-title {
   width: 45%;
 }
 
+.boxcontent {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+
+}
+
 .mat-radio-button ~ .mat-radio-button {
   margin-left: 16px;
 }
 
-mat-checkbox {
-
+.mat-flat-button.mat-warn, .mat-raised-button.mat-warn, .mat-fab.mat-warn, .mat-mini-fab.mat-warn {
+  background-color: darkslategrey !important;
 }
 
 ::ng-deep .mat-checkbox .mat-checkbox-frame {
   border-color: #5E76BF !important;
+}
+
+table {
+  width: 100%;
 }
 
 
@@ -85,9 +128,9 @@ mat-checkbox {
 }
 
 #map {
-  margin-left: 10%;
+  margin-left: 2%;
   height: 300px;
-  width: 100%;
+  width: 40%;
 }
 
 /*Dialog*/
@@ -119,6 +162,22 @@ mat-checkbox {
   background-color: #F23838 !important;
   color: white;
 }
+
+::ng-deep .mat-step-header[aria-selected="true"] {
+  background-color: #E9E9E9;
+  border-radius: 10px;
+
+}
+
+.mainbox {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+.stepTitle {
+  margin: 3em 5em 3em 3em;
+}
+
 
 @media (min-width: 1281px) {
 

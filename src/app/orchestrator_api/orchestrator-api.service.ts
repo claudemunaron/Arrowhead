@@ -140,6 +140,14 @@ export class OrchestratorApiService {
     );
   }
 
+  getService() {
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.get(this.addressData + '/service-list').pipe(
+      tap(data => console.log((JSON.stringify(data)))),
+      catchError(this.errorHandler)
+    );
+  }
+
   saveConfig(option) {
     this.addressData = localStorage.getItem('addressData');
     return this.http.post(this.addressData + 'config-update', option, {observe: 'response'}).pipe(

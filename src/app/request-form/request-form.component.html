@@ -6,72 +6,56 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
 
-    <div class="container">
-      <div class="cardbox">
-        <mat-card>
-          <mat-card-title> Request</mat-card-title>
-          <mat-card-content>
-            <!-- <mat-form-field class="example-full-width">
-               <mat-label>Parameters</mat-label>
-               <textarea matInput placeholder="parameter1, parameter2, ..."></textarea>
-             </mat-form-field> -->
-            <div class="card_content">
-              <mat-form-field>
-                <mat-label>Provider Type</mat-label>
-                <mat-select [(value)]="selectedPType">
-                  <mat-option value="mqtt">MQTT</mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field>
-                <mat-label>Service Definition</mat-label>
-                <mat-select [(value)]="selectedService">
-                  <mat-option value="vital_co2_sensor">vital_co2_sensor</mat-option>
-                  <mat-option value="vital_no2_sensor">vital_no2_sensor</mat-option>
-                  <mat-option value="vital_temperature_sensor">vital_temperature_sensor</mat-option>
-                  <mat-option value="vital_humidity_sensor">vital_humidity_sensor</mat-option>
-                  <mat-option value="vital_o3_sensor">vital_o3_sensor</mat-option>
-                  <mat-option value="vital_pm10_sensor">vital_pm10_sensor</mat-option>
-                  <mat-option value="vital_pm25_sensor">vital_pm25_sensor</mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field>
-                <mat-label>Location</mat-label>
-                <mat-select [(value)]="selectedLocation">
-                  <mat-option value="to">Torino</mat-option>
-                  <mat-option value="mi">Milano</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-          </mat-card-content>
-          <div class="btn_section">
-            <button (click)="submitRequest()" id="btn_submit" mat-raised-button>Submit</button>
-          </div>
-        </mat-card>
+    <div class="content">
+      <div class="add_dialog">
+        <button (click)="openDialog()" aria-label="" color="primary" mat-mini-fab>
+          <mat-icon>add</mat-icon>
+        </button>
       </div>
-      <div>
-        <mat-card>
-          <mat-card-title> Response</mat-card-title>
-          <mat-card-content>
-            <div *ngFor="let o of options; let i = index">
-              <mat-checkbox (change)="onChange($event)" [value]="o.metadata"
-                            color="primary">
-                {{o.metadata.FE_Sensor_Name }}
-                - {{o.metadata.FE_Meas_Unit}} -
-                {{o.metadata.FE_Site_ID}} -
-                {{o.metadata.FE_Protoc_Type}}
-              </mat-checkbox>
+      <div id="sensor_table">
+        <table [dataSource]="dataSource" mat-table matSort>
+          <!-- Position Column -->
+          <ng-container matColumnDef="Sensor_ID">
+            <th *matHeaderCellDef mat-header-cell mat-sort-header> Sensor_ID</th>
+            <td *matCellDef="let element" mat-cell> {{element.Sensor_ID}} </td>
+          </ng-container>
 
-            </div>
-          </mat-card-content>
-          <div class="btn_section">
-            <button (click)="save()" id="btn_save" mat-raised-button>Save</button>
-          </div>
-        </mat-card>
+          <!-- Name Column -->
+          <ng-container matColumnDef="Sensor_Name">
+            <th *matHeaderCellDef mat-header-cell mat-sort-header> Sensor Name</th>
+            <td *matCellDef="let element" mat-cell> {{element.Sensor_Name}} </td>
+          </ng-container>
+
+          <!-- Weight Column -->
+          <ng-container matColumnDef="Site_ID">
+            <th *matHeaderCellDef mat-header-cell> Location</th>
+            <td *matCellDef="let element" mat-cell> {{element.Site_ID}} </td>
+          </ng-container>
+
+          <!-- Symbol Column -->
+          <ng-container matColumnDef="Meas_Unit">
+            <th *matHeaderCellDef mat-header-cell> Meas Unit</th>
+            <td *matCellDef="let element" mat-cell> {{element.Meas_Unit}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="Visual">
+            <th *matHeaderCellDef mat-header-cell>
+            </th>
+            <td *matCellDef="let element" mat-cell>
+              <button (click)="visualizeData(element.Sensor_ID, element.Site_ID)" aria-label="" color="warn"
+                      mat-mini-fab>
+                <mat-icon>bar_chart</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+          <tr *matRowDef="let row; columns: displayedColumns;" mat-row></tr>
+        </table>
+
+        <mat-paginator [pageSizeOptions]="[5, 10]" showFirstLastButtons></mat-paginator>
       </div>
-      <div #mapContainer id="map">
-      </div>
+      <div #mapContainer id="map"></div>
     </div>
 
   </mat-expansion-panel>

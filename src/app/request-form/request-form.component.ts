@@ -1,16 +1,18 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild} from '@angular/core';
 import {OrchestratorApiService} from "../orchestrator_api/orchestrator-api.service";
-import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
-import {MatDialog} from '@angular/material/dialog';
+import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {NotifierService} from "angular-notifier";
 import {ChartVisualizationComponent} from "../chart-visualization/chart-visualization.component";
+import {MatTableDataSource} from "@angular/material/table";
+import {MatPaginator} from "@angular/material/paginator";
 
 export interface DialogData {
-  dateFrom: string;
-  dateTo: string;
-  date: FormControl;
-  cities: string[];
-  sensors: string[];
+  animal: string;
+  name: string;
+  selectedPType: string;
+  selectedService: string;
+  selectedLocation: string;
 }
 
 @Component({
@@ -23,6 +25,12 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   /*char variables*/
   @ViewChild(ChartVisualizationComponent) charChild;
 
+  ELEMENT_DATA: any[] = [];
+
+
+  displayedColumns: string[] = ['Sensor_ID', 'Sensor_Name', 'Site_ID', 'Meas_Unit', 'Visual'];
+  dataSource = new MatTableDataSource<any>(this.ELEMENT_DATA);
+  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
 
   /*Request form*/
   selectedPType = 'mqtt';
@@ -30,9 +38,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   selectedService = 'vital_co2_sensor';
   requestResponse: any;
 
-
   responseFormGroup: FormGroup;
-
 
   options: any = [];
   checkedElement: any[] = [];
@@ -49,6 +55,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   initialConfig: any;
   cities: string[] = [];
   sensors: string[] = [];
+  services: any[] = [];
   filter: { sName, city, dF, dT, hF, hT } = {sName: "", city: "", dF: "", dT: "", hF: "", hT: ""};
 
 
@@ -72,7 +79,8 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
     position: this.coordinates,
     map: this.map,
   });
-  private readonly notifier: NotifierService;
+  public readonly notifier: NotifierService;
+
 
   constructor(private orchestrator: OrchestratorApiService, private formBuilder: FormBuilder, public dialog: MatDialog,
               notifierService: NotifierService) {
@@ -89,21 +97,20 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       this.orchestrator.getInitialConfig().subscribe(response => {
           this.initialConfig = response;
           this.initConfig();
+          this.initService();
         },
         (error) => {
           console.log(error);
         });
     });
-
-
   }
 
   ngOnInit() {
+    this.dataSource.paginator = this.paginator;
     this.parentMessage = "";
     this.responseFormGroup = this.formBuilder.group({
       selected: this.formBuilder.array([])
     });
-
   }
 
   ngAfterViewInit() {
@@ -151,6 +158,21 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       this.changeMapCoordinates();
       this.showPanel = true;
     }
+  }
+
+
+  initService() {
+
+    this.orchestrator.getService().subscribe(resp => {
+        let s = resp;
+        this.services = s.result;
+        this.ELEMENT_DATA = [...this.services];
+        this.dataSource = new MatTableDataSource<any>(this.ELEMENT_DATA);
+        this.dataSource.paginator = this.paginator;
+      },
+      (error) => {
+        console.log(error);
+      });
   }
 
   onChange(event) {
@@ -241,6 +263,13 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       )
   }
 
+  visualizeData(sensor, city) {
+    this.showPanel = true;
+    this.panelOpenState = !this.panelOpenState;
+    this.charChild.changeConfig(city, sensor);
+
+  }
+
 
   getCities() {
     this.orchestrator.getCities()
@@ -287,7 +316,167 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
     let datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
     return datum.getTime() / 1000;
   }
+
+
+  /*DIALOG*/
+
+
+  openDialog(): void {
+    const dialogRef = this.dialog.open(RequestDialog, {
+      width: '40%',
+      height: '60%',
+
+      data: {name: 'name', animal: 'animal'}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+      this.initService();
+      //this.showPanel = true;
+      // this.panelOpenState = !this.panelOpenState;
+      this.charChild.getCities();
+      this.getCities();
+
+      let sensor = result.sensor;
+      let city = result.city;
+      let data = {city: city, sensor: sensor};
+      this.charChild.changeConfig(city, sensor);
+
+
+    });
+  }
 }
+
+
+@Component({
+  selector: 'request-dialog',
+  templateUrl: 'requestDialog.html',
+  styleUrls: ['./request-form.component.scss']
+})
+export class RequestDialog {
+  options: any = [];
+  checkedElement: any[] = [];
+  savedElement: any[] = [];
+  public readonly notifier: NotifierService;
+
+  isLinear = true;
+  responseFormGroup: FormGroup;
+  firstFormGroup: FormGroup;
+  secondFormGroup: FormGroup;
+
+  /*Request form*/
+  selectedPType = 'mqtt';
+  selectedLocation = 'to';
+  selectedService = 'vital_no2_sensor';
+  requestResponse: any;
+  response: any;
+
+
+  constructor(private orchestrator: OrchestratorApiService, notifierService: NotifierService,
+              private formBuilder: FormBuilder,
+              public dialogRef: MatDialogRef<RequestDialog>, @Inject(MAT_DIALOG_DATA) public data: DialogData, private _formBuilder: FormBuilder) {
+
+    this.notifier = notifierService;
+  }
+
+
+  ngOnInit() {
+    this.responseFormGroup = this.formBuilder.group({
+      selected: this.formBuilder.array([])
+    });
+    this.firstFormGroup = this._formBuilder.group({
+      firstCtrl: ['', Validators.required]
+    });
+    this.secondFormGroup = this._formBuilder.group({
+      secondCtrl: ['', Validators.required]
+    });
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+  submitRequest() {
+    this.options = [];
+    this.checkedElement = [];
+
+    this.orchestrator.orchestration(this.selectedService)
+      .subscribe(response => {
+          //this.notifier.notify('success', "Your request has been successfully submitted. ");
+          this.requestResponse = response;
+          for (let r of this.requestResponse.response) {
+            this.options.push(r);
+          }
+        },
+        (error) => {
+          // this.notifier.notify('error', " " + error);
+        })
+  }
+
+
+  save() {
+    this.savedElement = [...this.checkedElement];
+    if (this.savedElement.length > 0) {
+      for (let s of this.savedElement) {
+        let optionBody = this.options.filter(
+          (o) =>
+            o.metadata.FE_Sensor_ID == s.FE_Sensor_ID && o.metadata.FE_Site_ID == s.FE_Site_ID
+        );
+        this.postUpdate(optionBody[0]);
+      }
+    } else {
+      this.notifier.notify('warning', 'Warning: no element selected');
+    }
+  }
+
+  postUpdate(toConfig) {
+    this.orchestrator.saveConfig(toConfig)
+      .subscribe(response => {
+          this.response = response.body;
+          if (this.response.inserted_object_id) {
+            /* this.showPanel = true;
+              this.panelOpenState = !this.panelOpenState;
+              this.charChild.getCities();*/
+
+            let sensor = toConfig.metadata.FE_Sensor_ID;
+            let city = toConfig.metadata.FE_Site_ID;
+            let data = {city: city, sensor: sensor};
+            /*  this.charChild.changeConfig(city, sensor);
+              this.getCities();*/
+            this.dialogRef.close(data);
+
+            this.notifier.notify('success', 'Success: ' + this.response.message);
+          } else {
+            this.notifier.notify('error', 'Data not saved: ' + this.response.message);
+          }
+        },
+        err => {
+          console.log(err);
+          this.notifier.notify('error', 'Data not saved ');
+        }
+      )
+  }
+
+  onChange(event) {
+    const selected = <FormArray>this.responseFormGroup.get('selected') as FormArray;
+    if (event.checked) {
+      selected.push(new FormControl(event.source.value));
+      this.checkedElement.push((event.source.value));
+    } else {
+      const i = selected.controls.findIndex(x => x.value === event.source.value);
+      selected.removeAt(i);
+      this.checkedElement.splice(i, 1);
+    }
+
+  }
+
+
+  close() {
+    this.dialogRef.close();
+  }
+}
+
+
 
 
 

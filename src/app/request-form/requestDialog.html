@@ -1,0 +1,75 @@
+<div class="exit_button">
+
+
+  <button (click)="close()" id="cls" mat-icon-button>
+    <mat-icon>clear</mat-icon>
+  </button>
+
+</div>
+
+<div>
+  <mat-horizontal-stepper #stepper [linear]="true">
+    <mat-step>
+      <form [formGroup]="firstFormGroup">
+        <ng-template class="stepTitle" matStepLabel>Request</ng-template>
+        <div class="mainbox">
+          <div class="boxcontent">
+            <mat-form-field>
+              <mat-label>Provider Type</mat-label>
+              <mat-select [(value)]="selectedPType">
+                <mat-option value="mqtt">MQTT</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Service Definition</mat-label>
+              <mat-select [(value)]="selectedService" required>
+                <mat-option value="vital_co2_sensor">vital_co2_sensor</mat-option>
+                <mat-option value="vital_no2_sensor">vital_no2_sensor</mat-option>
+                <mat-option value="vital_temperature_sensor">vital_temperature_sensor</mat-option>
+                <mat-option value="vital_humidity_sensor">vital_humidity_sensor</mat-option>
+                <mat-option value="vital_o3_sensor">vital_o3_sensor</mat-option>
+                <mat-option value="vital_pm10_sensor">vital_pm10_sensor</mat-option>
+                <mat-option value="vital_pm25_sensor">vital_pm25_sensor</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Location</mat-label>
+              <mat-select [(value)]="selectedLocation">
+                <mat-option value="to">Torino</mat-option>
+                <mat-option value="mi">Milano</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <div>
+
+          <button (click)="submitRequest()" mat-button matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+    <mat-step [stepControl]="">
+
+      <form [formGroup]="responseFormGroup">
+        <div class="mainbox">
+          <ng-template class="stepTitle" matStepLabel>Response</ng-template>
+
+          <div *ngFor="let o of options; let i = index">
+            <mat-checkbox (change)="onChange($event)" [value]="o.metadata"
+                          color="primary">
+              {{o.metadata.FE_Sensor_Name }}
+              - {{o.metadata.FE_Meas_Unit}} -
+              {{o.metadata.FE_Site_ID}} -
+              {{o.metadata.FE_Protoc_Type}}
+            </mat-checkbox>
+          </div>
+        </div>
+        <div>
+          <button mat-button matStepperPrevious>Back</button>
+          <button (click)="save()" mat-button>Save</button>
+        </div>
+      </form>
+    </mat-step>
+  </mat-horizontal-stepper>
+</div>
