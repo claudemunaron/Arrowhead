@@ -40,7 +40,7 @@ import {MatStepperModule} from '@angular/material/stepper';
     HomeComponent,
     ChartVisualizationComponent,
     DialogFil,
-    RequestDialog
+    RequestDialog,
   ],
   imports: [
     BrowserModule,
@@ -67,7 +67,8 @@ import {MatStepperModule} from '@angular/material/stepper';
     FormsModule,
     MatTableModule,
     MatPaginatorModule,
-    MatStepperModule
+    MatStepperModule,
+
   ],
   providers: [
     MatDatepickerModule

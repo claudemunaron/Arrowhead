@@ -11,10 +11,34 @@
         <button (click)="openDialog()" aria-label="" color="primary" mat-mini-fab>
           <mat-icon>add</mat-icon>
         </button>
+        <button (click)="delete()" aria-label="" id="btn_delete" mat-mini-fab>
+          <mat-icon>delete</mat-icon>
+        </button>
+
       </div>
       <div id="sensor_table">
         <table [dataSource]="dataSource" mat-table matSort>
-          <!-- Position Column -->
+          <!-- Checkbox Column -->
+          <ng-container matColumnDef="select">
+            <th *matHeaderCellDef mat-header-cell>
+              <mat-checkbox (change)="$event ? masterToggle() : null"
+                            [aria-label]="checkboxLabel()"
+                            [checked]="selection.hasValue() && isAllSelected()"
+                            [indeterminate]="selection.hasValue() && !isAllSelected()"
+                            class="chk_select">
+              </mat-checkbox>
+            </th>
+            <td *matCellDef="let row" mat-cell>
+              <mat-checkbox (change)="$event ? selection.toggle(row) : null"
+                            (click)="$event.stopPropagation()"
+                            [aria-label]="checkboxLabel(row)"
+                            [checked]="selection.isSelected(row)"
+                            class="chk_select">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+
+
           <ng-container matColumnDef="Sensor_ID">
             <th *matHeaderCellDef mat-header-cell mat-sort-header> Sensor_ID</th>
             <td *matCellDef="let element" mat-cell> {{element.Sensor_ID}} </td>

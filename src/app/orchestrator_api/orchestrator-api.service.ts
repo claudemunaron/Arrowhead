@@ -193,4 +193,12 @@ export class OrchestratorApiService {
       catchError(this.errorHandler)
     );
   }
+
+  delete(city, sensorID) {
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.delete(this.addressData + '/service-delete/city/' + city + '/sensor-id/' + sensorID).pipe(
+      tap(data => console.log((JSON.stringify(data)))),
+      catchError(this.errorHandler)
+    );
+  }
 }

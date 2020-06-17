@@ -6,6 +6,7 @@ import {NotifierService} from "angular-notifier";
 import {ChartVisualizationComponent} from "../chart-visualization/chart-visualization.component";
 import {MatTableDataSource} from "@angular/material/table";
 import {MatPaginator} from "@angular/material/paginator";
+import {SelectionModel} from '@angular/cdk/collections';
 
 export interface DialogData {
   animal: string;
@@ -14,6 +15,7 @@ export interface DialogData {
   selectedService: string;
   selectedLocation: string;
 }
+
 
 @Component({
   selector: 'app-request-form',
@@ -28,8 +30,9 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   ELEMENT_DATA: any[] = [];
 
 
-  displayedColumns: string[] = ['Sensor_ID', 'Sensor_Name', 'Site_ID', 'Meas_Unit', 'Visual'];
+  displayedColumns: string[] = ['select', 'Sensor_ID', 'Sensor_Name', 'Site_ID', 'Meas_Unit', 'Visual'];
   dataSource = new MatTableDataSource<any>(this.ELEMENT_DATA);
+  selection = new SelectionModel<any>(true, []);
   @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
 
   /*Request form*/
@@ -80,6 +83,29 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
     map: this.map,
   });
   public readonly notifier: NotifierService;
+
+  /** Whether the number of selected elements matches the total number of rows. */
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.dataSource.data.length;
+    return numSelected === numRows;
+  }
+
+  /** Selects all rows if they are not all selected; otherwise clear selection. */
+  masterToggle() {
+    this.isAllSelected() ?
+      this.selection.clear() :
+      this.dataSource.data.forEach(row => this.selection.select(row));
+  }
+
+  /** The label for the checkbox on the passed row */
+  checkboxLabel(row?: any): string {
+
+    if (!row) {
+      return `${this.isAllSelected() ? 'select' : 'deselect'} all`;
+    }
+    return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.position + 1}`;
+  }
 
 
   constructor(private orchestrator: OrchestratorApiService, private formBuilder: FormBuilder, public dialog: MatDialog,
@@ -192,20 +218,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
     this.options = [];
     this.checkedElement = [];
 
-    /*this.orchestrator.submitRequest(this.selectedSID)
-      .subscribe(response => {
-          this.notifier.notify('success', "Your request has been successfully submitted. ");
-          this.requestResponse = response.body;
-          console.log(this.requestResponse);
-          let exists = !!this.options.find(x => x.id === this.requestResponse.id);
-
-          if (!exists) {
-            this.options.push(this.requestResponse);
-          }
-        },
-        (error) => {
-          this.notifier.notify('error', " " + error);
-        })*/
 
     this.orchestrator.orchestration(this.selectedService)
       .subscribe(response => {
@@ -295,6 +307,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       };
   }
 
+
   getCurrentDayTimeStamp() {
     let currentData = new Date();
     let year = currentData.getFullYear();
@@ -315,6 +328,28 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   getUnixTimeStamp(year, month, day, hour, minute, second) {
     let datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
     return datum.getTime() / 1000;
+  }
+
+  delete() {
+    if (this.selection.selected.length === 0) {
+      this.notifier.notify('warning', 'Warning: no element selected');
+    } else {
+      for (let s of this.selection.selected) {
+        this.orchestrator.delete(s.Site_ID, s.Sensor_ID)
+          .subscribe(response => {
+              this.response = response;
+              this.initService();
+              this.notifier.notify('success', this.response.message + ' ' + 'Sensor ID: ' + this.response.Removed_Sensor_ID + ' Location: ' + this.response.Removed_Site_ID);
+
+            },
+            err => {
+              console.log(err);
+              this.notifier.notify('error', 'Data not deleted ');
+            }
+          )
+      }
+    }
+
   }
 
 

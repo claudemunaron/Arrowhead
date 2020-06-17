@@ -34,6 +34,7 @@
 }
 
 .content {
+  margin-top: 1em;
   display: flex;
 }
 
@@ -123,13 +124,30 @@ table {
 
 }
 
+.chk_select {
+
+}
+
+::ng-deep .mat-checkbox-checked.mat-accent .mat-checkbox-ripple .mat-ripple-element {
+  opacity: 0.03 !important;
+  background-color: #f44336 !important;
+}
+
+::ng-deep .mat-checkbox-checked.mat-accent .mat-checkbox-background, .mat-checkbox-indeterminate.mat-accent .mat-checkbox-background {
+  background-color: #f44336;
+}
+
+#btn_delete {
+  margin-top: 10%;
+  background-color: #f44336;
+}
+
 .visualization_div {
   margin-top: 2em;
 }
 
 #map {
   margin-left: 2%;
-  height: 300px;
   width: 40%;
 }
 
