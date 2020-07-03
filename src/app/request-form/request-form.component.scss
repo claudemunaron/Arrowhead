@@ -12,6 +12,12 @@
 
 .add_dialog {
   float: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.add_dialog button {
+  margin: 2px;
 }
 
 #cls {
@@ -140,6 +146,10 @@ table {
 #btn_delete {
   margin-top: 10%;
   background-color: #f44336;
+}
+
+#btn_delete2 {
+  margin-top: 10%;
 }
 
 .visualization_div {

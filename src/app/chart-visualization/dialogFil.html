@@ -34,6 +34,23 @@
     </div>
   </div>
 
+
+  <div class="filter_item">
+    <!--<mat-form-field class="example-full-width">
+      <mat-label>Sensor name</mat-label>
+      <input matInput placeholder="Ex. HUM Sensor" value="HUM Sensor">
+    </mat-form-field>-->
+    <mat-form-field>
+      <mat-label>Select a sensor</mat-label>
+      <mat-select (selectionChange)="changeSensor($event)" [(value)]="selectedSensor" [formControl]="sensorError"
+                  required>
+        <mat-option>None</mat-option>
+        <mat-option *ngFor="let s of data.sensors" [value]="s">{{s}}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="sensorError.invalid"> Select a sensor</mat-error>
+    </mat-form-field>
+  </div>
+
   <div class="filter_item">
     <!--<mat-form-field class="example-full-width">
       <mat-label>Site ID</mat-label>
@@ -42,9 +59,9 @@
 
     <mat-form-field>
       <mat-label>Select a city</mat-label>
-      <mat-select (selectionChange)="changeCity($event)" [(value)]="selectedCity" [formControl]="cityError" required>
-        <mat-option>None</mat-option>
-        <mat-option *ngFor="let c of data.cities" [value]="c">{{c}}</mat-option>
+      <mat-select [(value)]="selectedCity" [formControl]="cityError" multiple required>
+
+        <mat-option *ngFor="let c of cities" [value]="c">{{c}}</mat-option>
 
       </mat-select>
       <mat-error *ngIf="cityError.invalid"> Select a city</mat-error>
@@ -53,20 +70,6 @@
 
     <!-- <p>You selected: {{selectedCity}}</p>-->
 
-  </div>
-  <div class="filter_item">
-    <!--<mat-form-field class="example-full-width">
-      <mat-label>Sensor name</mat-label>
-      <input matInput placeholder="Ex. HUM Sensor" value="HUM Sensor">
-    </mat-form-field>-->
-    <mat-form-field>
-      <mat-label>Select a sensor</mat-label>
-      <mat-select [(value)]="selectedSensor" [formControl]="sensorError" required>
-        <mat-option>None</mat-option>
-        <mat-option *ngFor="let s of sensors" [value]="s">{{s}}</mat-option>
-      </mat-select>
-      <mat-error *ngIf="sensorError.invalid"> Select a sensor</mat-error>
-    </mat-form-field>
   </div>
 </div>
 

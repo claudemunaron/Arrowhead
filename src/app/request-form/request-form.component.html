@@ -11,10 +11,28 @@
         <button (click)="openDialog()" aria-label="" color="primary" mat-mini-fab>
           <mat-icon>add</mat-icon>
         </button>
-        <button (click)="delete()" aria-label="" id="btn_delete" mat-mini-fab>
+        <button (click)="visualizeMore()" aria-label="" color="primary" mat-mini-fab>
+          <mat-icon>bar_chart</mat-icon>
+        </button>
+        <button
+          (cancel)="cancelClicked = true"
+          (confirm)="confirmClicked = true;  delete() "
+          *ngIf="this.selection.selected.length > 0" [popoverMessage]="popoverMessage"
+          [popoverTitle]="popoverTitle"
+          data-toggle="modal"
+          id="btn_delete"
+          mat-mini-fab
+          mwlConfirmationPopover
+          placement="right">
           <mat-icon>delete</mat-icon>
         </button>
-
+        <button
+          *ngIf="this.selection.selected.length === 0"
+          disabled=true
+          id="btn_delete2"
+          mat-mini-fab>
+          <mat-icon>delete</mat-icon>
+        </button>
       </div>
       <div id="sensor_table">
         <table [dataSource]="dataSource" mat-table matSort>
@@ -36,6 +54,7 @@
                             class="chk_select">
               </mat-checkbox>
             </td>
+
           </ng-container>
 
 
@@ -62,16 +81,6 @@
             <td *matCellDef="let element" mat-cell> {{element.Meas_Unit}} </td>
           </ng-container>
 
-          <ng-container matColumnDef="Visual">
-            <th *matHeaderCellDef mat-header-cell>
-            </th>
-            <td *matCellDef="let element" mat-cell>
-              <button (click)="visualizeData(element.Sensor_ID, element.Site_ID)" aria-label="" color="warn"
-                      mat-mini-fab>
-                <mat-icon>bar_chart</mat-icon>
-              </button>
-            </td>
-          </ng-container>
 
           <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
           <tr *matRowDef="let row; columns: displayedColumns;" mat-row></tr>
@@ -80,6 +89,7 @@
         <mat-paginator [pageSizeOptions]="[5, 10]" showFirstLastButtons></mat-paginator>
       </div>
       <div #mapContainer id="map"></div>
+
     </div>
 
   </mat-expansion-panel>

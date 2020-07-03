@@ -108,7 +108,7 @@ export class OrchestratorApiService {
   }
 
 
-  getData(sensorID, city, time_range) {
+  async getData(sensorID, city, time_range) {
     this.addressData = localStorage.getItem('addressData');
     return this.http.get(this.addressData + 'formquery/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time_range).pipe(
       tap(data => console.log((JSON.stringify(data)))),
@@ -116,20 +116,33 @@ export class OrchestratorApiService {
     );
   }
 
-  getCities() {
+  async getMultiQuery(query, time_range) {
     this.addressData = localStorage.getItem('addressData');
-    return this.http.get(this.addressData + 'city-list').pipe(
-      tap(data => console.log((JSON.stringify(data)))),
-      catchError(this.errorHandler)
-    );
+    return await this.http.get(this.addressData + 'multiplequery/city-sensorid/' + query + '/time-range/' + time_range).toPromise();
   }
 
-  getSensors() {
+  async getCities() {
     this.addressData = localStorage.getItem('addressData');
-    return this.http.get(this.addressData + 'sensor-list').pipe(
-      tap(data => console.log((JSON.stringify(data)))),
-      catchError(this.errorHandler)
-    );
+    return await this.http.get(this.addressData + 'city-list').toPromise();
+  }
+
+  async getSensors() {
+    this.addressData = localStorage.getItem('addressData');
+    return await this.http.get(this.addressData + 'sensor-list').toPromise();
+  }
+
+  async getInitialConfig() {
+    this.addressData = localStorage.getItem('addressData');
+    return await this.http.get(this.addressData + 'get-config').toPromise();
+  }
+
+  async getCoordinates(sensorID, city) {
+    this.addressData = localStorage.getItem('addressData');
+    return await this.http.get(this.addressData + 'city/' + city + '/sensor-id/' + sensorID + '/get-coordinates').toPromise();
+  }
+
+  async getTimeZone(lat, lng) {
+    return await this.http.get('http://api.timezonedb.com/v2.1/get-time-zone?key=AS89CMPR9VFF&format=json&by=position&lat=' + lat + '&lng=' + lng).toPromise();
   }
 
   getSensorsCity(city) {
@@ -139,6 +152,15 @@ export class OrchestratorApiService {
       catchError(this.errorHandler)
     );
   }
+
+  getCitiesSensor(sensor) {
+    this.addressData = localStorage.getItem('addressData');
+    return this.http.get(this.addressData + 'sensor-id/' + sensor + '/city-list').pipe(
+      tap(data => console.log((JSON.stringify(data)))),
+      catchError(this.errorHandler)
+    );
+  }
+
 
   getService() {
     this.addressData = localStorage.getItem('addressData');
@@ -156,28 +178,6 @@ export class OrchestratorApiService {
     );
   }
 
-  getCoordinates(sensorID, city) {
-    this.addressData = localStorage.getItem('addressData');
-    return this.http.get(this.addressData + 'city/' + city + '/sensor-id/' + sensorID + '/get-coordinates').pipe(
-      tap(data => console.log((JSON.stringify(data)))),
-      catchError(this.errorHandler)
-    );
-  }
-
-  getInitialConfig() {
-    this.addressData = localStorage.getItem('addressData');
-    return this.http.get(this.addressData + 'get-config').pipe(
-      tap(data => console.log((JSON.stringify(data)))),
-      catchError(this.errorHandler)
-    );
-  }
-
-  getTimeZone(lat, lng) {
-    return this.http.get('http://api.timezonedb.com/v2.1/get-time-zone?key=AS89CMPR9VFF&format=json&by=position&lat=' + lat + '&lng=' + lng).pipe(
-      tap(data => console.log((JSON.stringify(data)))),
-      catchError(this.errorHandler)
-    );
-  }
 
   getErrorList() {
     this.addressData = localStorage.getItem('addressData');

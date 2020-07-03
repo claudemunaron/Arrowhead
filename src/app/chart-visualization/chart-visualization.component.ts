@@ -47,7 +47,7 @@ export class ChartVisualizationComponent implements OnInit {
   city: "";
   timeRange = "";
 
-  public currentErrorDescr = "";
+
   filterDataDF: any = new Date();
   filterDataDT: any = new Date();
 
@@ -64,12 +64,9 @@ export class ChartVisualizationComponent implements OnInit {
   date: any = new FormControl(new Date());
   public readonly notifier: NotifierService;
 
+
   lineChartData: ChartDataSets[] = [
-    {
-      data: [],
-      backgroundColor: '#1FBF74',
-      borderColor: '#097341',
-    },
+
     {
       data: [],
       label: 'Error',
@@ -80,6 +77,27 @@ export class ChartVisualizationComponent implements OnInit {
       pointRadius: 9,
 
     },
+    {
+      data: [],
+      backgroundColor: 'transparent',
+      borderColor: '#097341',
+      type: 'line'
+    },
+    {
+      data: [],
+      backgroundColor: 'transparent',
+      borderColor: 'blue',
+      pointBackgroundColor: '#5dade2',
+      type: 'line'
+    },
+
+    {
+      data: [],
+      backgroundColor: 'transparent',
+      borderColor: '#097341',
+      type: 'line'
+    },
+
   ];
   lineChartLabels: Label[] = [];
   lineChartOptions = {
@@ -90,13 +108,14 @@ export class ChartVisualizationComponent implements OnInit {
     tooltips: {
       callbacks: {
         label: function (tooltipItem, data) {
-          //var label = data.datasets[tooltipItem.datasetIndex].label || '';
+          var l = data.datasets[tooltipItem.datasetIndex].label || '';
           var label = currentLabel[tooltipItem.index];
           let s = [];
           if (label) {
             s = label.split('-');
           }
-          return s[0];
+          // return s[0] + s[2];
+          return l;
         },
         footer: function (tooltipItems, data) {
           var value = 0;
@@ -153,12 +172,18 @@ export class ChartVisualizationComponent implements OnInit {
   lineChartColors: Color[] = [];
   lineChartLegend = true;
   lineChartPlugins = {};
-  lineChartType = 'bar';
+  lineChartType = 'line';
 
   constructor(private orchestrator: OrchestratorApiService, public dialog: MatDialog) {
     this.getCities();
     this.getSensors();
-    this.initConfig();
+    this.init()
+      .then(() => {
+        this.initConfig();
+      })
+      .then(() => {
+        this.getDataInit(this.filter.city, this.filter.sName);
+      })
   }
 
 
@@ -171,49 +196,106 @@ export class ChartVisualizationComponent implements OnInit {
       });
   }
 
-
-  initConfig() {
-
-    this.orchestrator.getInitialConfig()
-      .subscribe(response => {
-          this.initialConfig = response;
-          if (this.initialConfig.result && this.initialConfig.result.length > 0) {
-            this.filter.city = this.initialConfig.result[0].FE_Site_ID;
-            this.filter.sName = this.initialConfig.result[0].FE_Sensor_ID;
-            this.messageLatitude = this.initialConfig.result[0].FE_Latitude;
-            this.messageLongitude = this.initialConfig.result[0].FE_Longitude;
-
-            this.filter.dF = new Date();
-            this.filter.dT = new Date();
-            this.filter.hF = "00:00";
-            this.filter.hT = "23:59";
-
-            this.getOffset(this.initialConfig.result[0].FE_Latitude, this.initialConfig.result[0].FE_Longitude);
-          }
-        },
-        (error) => {
-          console.log(error);
-        });
+  async init() {
+    this.initialConfig = await this.orchestrator.getInitialConfig()
   }
 
-  changeConfig(city, sensor) {
+
+  async initConfig() {
+    if (this.initialConfig.result && this.initialConfig.result.length > 0) {
+      this.filter.city = this.initialConfig.result[0].FE_Site_ID;
+      this.filter.sName = this.initialConfig.result[0].FE_Sensor_ID;
+      this.messageLatitude = this.initialConfig.result[0].FE_Latitude;
+      this.messageLongitude = this.initialConfig.result[0].FE_Longitude;
+
+      this.filter.dF = new Date();
+      this.filter.dT = new Date();
+      this.filter.hF = "00:00";
+      this.filter.hT = "23:59";
+
+      this.getOffset(this.initialConfig.result[0].FE_Latitude, this.initialConfig.result[0].FE_Longitude);
+    }
+  }
+
+
+  visualizeList(list) {
+    this.getDataList(list)
+      .then(() => {
+          this.draw(list.length);
+        }
+      )
+  }
+
+  async getDataList(list) {
+    let timeRange = this.getTimeRange(this.offset);
+    this.filter.city = [];
     this.filter.dF = new Date();
     this.filter.dT = new Date();
     this.filter.hF = "00:00";
     this.filter.hT = "23:59";
 
-    this.filter.city = city;
-    this.filter.sName = sensor;
-    this.sendRequestUpdateSave();
+    let stringList = '';
+    for (let s of list) {
+      stringList = stringList + s.Site_ID + '+' + s.Sensor_ID + '&';
+      this.filter.sName = s.Sensor_ID;
+      this.filter.city.push(s.Site_ID);
+    }
+    let newStr = stringList.substring(0, stringList.length - 1);
+    this.responseChart = await this.orchestrator.getMultiQuery(newStr, timeRange);
   }
 
-  sendRequestUpdateSave() {
-    let city = this.filter.city;
-    let sensor = this.filter.sName;
-    this.getCoordinates(sensor, city);
+  async getDataInit(site, sensor) {
     let timeRange = this.getTimeRange(this.offset);
-    this.update(sensor, city, timeRange);
+    let stringList = '';
+    stringList = stringList + site + '+' + sensor;
+    this.responseChart = await this.orchestrator.getMultiQuery(stringList, timeRange);
+    this.draw(1);
   }
+
+  draw(tot) {
+    let i = 1;
+    this.lineChart.chart.data.datasets.forEach((dataset) => {
+      dataset.data = [];
+    });
+    currentLabel = [];
+    this.lineChartLabels = [];  /*Refresh label*/
+    let total = tot;
+
+    /*timerange from - to*/
+    let dateChartFrom = new Date(this.unixtimeF * 1000);
+    let dateChartTo = new Date(this.unixtimeT * 1000);
+
+    this.responseChart.result = this.responseChart.result.sort((a, b) => {
+        return b.values.length - a.values.length;
+      }
+    );
+    for (let k of this.responseChart.result) {
+      let cont = 0;
+      for (let e of k.values) {
+        if (cont == 0) {
+          this.addDataBis(null, dateChartFrom, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total);
+        }
+
+        let unix_timestamp = e.Meas_Timestamp;
+        console.log(unix_timestamp);
+        var date = new Date(unix_timestamp * 1000);
+        var hours = date.getHours();
+        var minutes = "0" + date.getMinutes();
+        var seconds = "0" + date.getSeconds();
+
+        // Will display time in 10:30:23 format
+        var formattedTime = date.toDateString() + '  ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+        this.addDataBis(e.Meas_Value, formattedTime, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total);
+
+        if (cont == k.values.length - 1) {
+          this.addDataBis(null, dateChartTo, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total);
+        }
+        cont = cont + 1;
+      }
+      i = i + 1;
+    }
+  }
+
 
   refresh() {
     this.sendRequestUpdate();
@@ -221,42 +303,21 @@ export class ChartVisualizationComponent implements OnInit {
 
 
   async getCities() {
-    this.orchestrator.getCities()
-      .subscribe(response => {
-          this.response = response;
-          this.cities = [...this.response.result];
-        }
-      ),
-      err => {
-        console.log('Error in get!');
-      };
+    this.response = await this.orchestrator.getCities();
+    this.cities = [...this.response.result];
   }
 
   async getSensors() {
-    this.orchestrator.getSensors()
-      .subscribe(response => {
-          this.response = response;
-          this.sensors = [...this.response.result];
-        }
-      ),
-      err => {
-        console.log('Error in get!');
-      };
+    this.response = await this.orchestrator.getSensors();
+    this.sensors = [...this.response.result];
   }
 
   async getCoordinates(sID, city) {
-    this.orchestrator.getCoordinates(sID, city).subscribe(
-      response => {
-        this.response = response;
-        this.messageLatitude = response.result[0].Latitude;
-        this.messageLongitude = response.result[0].Longitude;
-        this.getOffset(this.messageLatitude, this.messageLongitude);
-        this.sendMessage();
-      },
-      error => {
-        console.log('ERROR GET COORDINATES')
-      }
-    )
+    this.response = await this.orchestrator.getCoordinates(sID, city);
+    this.messageLatitude = this.response.result[0].Latitude;
+    this.messageLongitude = this.response.result[0].Longitude;
+    this.getOffset(this.messageLatitude, this.messageLongitude);
+    this.sendMessage();
   }
 
   sendMessage() {
@@ -270,7 +331,7 @@ export class ChartVisualizationComponent implements OnInit {
       data: {
         date: this.date.value,
         cities: this.cities,
-        sensors: ''
+        sensors: this.sensors
       },
     });
 
@@ -287,18 +348,10 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
 
-  getOffset(lat, lng) {
-    this.orchestrator.getTimeZone(lat, lng)
-      .subscribe(response => {
-          this.offset = response.gmtOffset;
-          this.visualizationUpdate();
-        }
-      );
-  }
+  async getOffset(lat, lng) {
+    let resp: any = await this.orchestrator.getTimeZone(lat, lng);
+    this.offset = resp.gmtOffset;
 
-  visualizationUpdate() {
-    let timeRange = this.getTimeRange(this.offset);
-    this.update(this.filter.sName, this.filter.city, timeRange);
   }
 
 
@@ -306,72 +359,49 @@ export class ChartVisualizationComponent implements OnInit {
     let city = this.filter.city;
     let sensor = this.filter.sName;
     this.getCoordinates(sensor, city);
-    /*let timeRange = this.getTimeRange(this.offset);
-    this.update(sensor, city, timeRange);*/
-  }
+    let timeRange = this.getTimeRange(this.offset);
 
-
-  update(sensor, city, timeRange) {
-    this.orchestrator.getData(sensor, city, timeRange)
-      .subscribe(response => {
-          this.responseChart = response.result;
-          this.drawChart();
-        },
-        err => {
-          console.log('ERROR GET DATA!');
+    this.update(sensor, city, timeRange)
+      .then(() => {
+          this.draw(city.length);
         }
       )
   }
 
-  drawChart() {
-    this.lineChart.chart.data.datasets.forEach((dataset) => {
-      dataset.data = [];
-    });   /*Refresh data*/
-    currentLabel = [];
-    this.lineChartLabels = [];  /*Refresh label*/
-    let index = 0;
-    /*timerange from - to*/
-    let dateChartFrom = new Date(this.unixtimeF * 1000);
-    this.addData(0, dateChartFrom, 'No value', 'Id', 'site', '');
 
-
-    let dateChartTo = new Date(this.unixtimeT * 1000);
-    this.addData(0, dateChartTo, '', '', '', '');
-
-    for (let e of this.responseChart) {
-
-      let unix_timestamp = e.Meas_Timestamp;
-      var date = new Date(unix_timestamp * 1000);
-      var hours = date.getHours();
-      var minutes = "0" + date.getMinutes();
-      var seconds = "0" + date.getSeconds();
-
-
-      // Will display time in 10:30:23 format
-      var formattedTime = date.toDateString() + '  ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-
-      this.sensorUnit = e.Meas_Unit;
-      this.sensorName = e.Sensor_Name;
-      this.city = e.Site_ID;
-      this.addData(e.Meas_Value, formattedTime, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit);
-      index = index + 1;
+  async update(sensor, city, timeRange) {
+    let stringList = '';
+    for (let s of city) {
+      stringList = stringList + s + '+' + sensor + '&'
     }
+    let newStr = stringList.substring(0, stringList.length - 1);
+    this.responseChart = await this.orchestrator.getMultiQuery(newStr, timeRange);
   }
 
-  addData(data, label, sName, sID, site, mUnit) {
+
+  addDataBis(data, label, sName, sID, site, mUnit, position, total) {
     let e = this.errorList.filter((e) => e.error_value == data);
     if (e && e.length > 0) {
-      this.lineChart.chart.data.datasets[1].data.push(0);
-      this.lineChart.chart.data.datasets[1].label = 'Error';
+      this.lineChart.chart.data.datasets[0].data.push(0);
+      this.lineChart.chart.data.datasets[0].label = 'Error';
       let l = 'Error:' + e[0].error_code + ' ' + e[0].error_description;
       currentLabel.push(l);
-      this.lineChart.chart.data.datasets[0].data.push(null);
+      for (let i = 1; i <= total; i++) {
+        this.lineChart.chart.data.datasets[i].data.push(null);
+      }
+      //this.lineChart.chart.data.datasets[position].data.push(null);
     } else {
-      this.lineChart.chart.data.datasets[0].data.push(data);
-      this.lineChart.chart.data.datasets[0].label = 'Sensor name: ' + sName;
-      let l = 'Sensor name: ' + sName + '-' + mUnit;
+      this.lineChart.chart.data.datasets[position].data.push(data);
+      this.lineChart.chart.data.datasets[position].label = 'Sensor name: ' + sName + ' ' + site;
+      let l = 'Sensor name: ' + sName + '-' + mUnit + '-' + site;
       currentLabel.push(l);
-      this.lineChart.chart.data.datasets[1].data.push(null);
+      for (let i = 0; i <= total; i++) {
+        if (i != position) {
+          this.lineChart.chart.data.datasets[i].data.push(null);
+        }
+        //this.lineChart.chart.data.datasets[i].data.push(null);
+      }
+      //this.lineChart.chart.data.datasets[0].data.push(null);
     }
 
     this.lineChartLabels.push(label);
@@ -422,6 +452,7 @@ export class ChartVisualizationComponent implements OnInit {
   styleUrls: ['./chart-visualization.component.scss']
 })
 export class DialogFil {
+  cities: string[] = [];
   sensors: string[] = [];
   response: any;
 
@@ -478,16 +509,14 @@ export class DialogFil {
     this.getSensorForCity(this.selectedCity);
   }
 
-  getCity() {
-    this.orchestrator.getCities().subscribe(
-      response => {
-        this.response = response;
-        this.data.cities = [...this.response.result];
-      },
-      error => {
-        console.log('ERROR GET SENSORS CITY')
-      }
-    )
+  changeSensor(event) {
+    this.getCitiesForSensor(this.selectedSensor);
+  }
+
+  async getCity() {
+    this.response = await this.orchestrator.getCities();
+    this.data.cities = [...this.response.result];
+
   }
 
   getSensorForCity(city) {
@@ -500,6 +529,24 @@ export class DialogFil {
         console.log('ERROR GET SENSORS CITY')
       }
     )
+  }
+
+  getCitiesForSensor(sensor) {
+    this.orchestrator.getCitiesSensor(sensor).subscribe(
+      response => {
+        this.response = response;
+        this.cities = [...this.response.result];
+      },
+      error => {
+        console.log('ERROR GET SENSORS CITY')
+      }
+    )
+  }
+
+
+  async getSensors() {
+    this.response = this.orchestrator.getSensors();
+    this.sensors = [...this.response.result];
   }
 
   checkDate() {/*48h*/

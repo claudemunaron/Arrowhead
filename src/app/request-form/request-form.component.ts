@@ -24,13 +24,14 @@ export interface DialogData {
 })
 export class RequestFormComponent implements OnInit, AfterViewInit {
 
+
   /*char variables*/
   @ViewChild(ChartVisualizationComponent) charChild;
 
   ELEMENT_DATA: any[] = [];
 
 
-  displayedColumns: string[] = ['select', 'Sensor_ID', 'Sensor_Name', 'Site_ID', 'Meas_Unit', 'Visual'];
+  displayedColumns: string[] = ['select', 'Sensor_ID', 'Sensor_Name', 'Site_ID', 'Meas_Unit'];
   dataSource = new MatTableDataSource<any>(this.ELEMENT_DATA);
   selection = new SelectionModel<any>(true, []);
   @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
@@ -60,6 +61,11 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   sensors: string[] = [];
   services: any[] = [];
   filter: { sName, city, dF, dT, hF, hT } = {sName: "", city: "", dF: "", dT: "", hF: "", hT: ""};
+
+  popoverTitle = 'Confirm deletion';
+  popoverMessage = 'Are you sure to remove this records?';
+  confirmClicked = false;
+  cancelClicked = false;
 
 
   /*grapic variables*/
@@ -119,16 +125,39 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       } else {
         localStorage.setItem('addressData', 'http://91.218.224.188:5000/');
       }
-
-      this.orchestrator.getInitialConfig().subscribe(response => {
-          this.initialConfig = response;
+      this.init()
+        .then(() => {
           this.initConfig();
-          this.initService();
-        },
-        (error) => {
-          console.log(error);
-        });
+        }).then(() => {
+        this.initService();
+      });
     });
+  }
+
+  async init() {
+    this.initialConfig = await this.orchestrator.getInitialConfig()
+  }
+
+  async initConfig() {
+    if (this.initialConfig.result && this.initialConfig.result.length > 0) {
+      this.lat = this.initialConfig.result[0].FE_Latitude;
+      this.lng = this.initialConfig.result[0].FE_Longitude;
+      this.changeMapCoordinates();
+      this.showPanel = true;
+    }
+  }
+
+
+  async initService() {
+    this.orchestrator.getService().subscribe(resp => {
+        this.services = resp.result;
+        this.ELEMENT_DATA = [...this.services];
+        this.dataSource = new MatTableDataSource<any>(this.ELEMENT_DATA);
+        this.dataSource.paginator = this.paginator;
+      },
+      (error) => {
+        console.log(error);
+      });
   }
 
   ngOnInit() {
@@ -176,30 +205,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
     this.marker.setMap(this.map);
   }
 
-
-  initConfig() {
-    if (this.initialConfig.result && this.initialConfig.result.length > 0) {
-      this.lat = this.initialConfig.result[0].FE_Latitude;
-      this.lng = this.initialConfig.result[0].FE_Longitude;
-      this.changeMapCoordinates();
-      this.showPanel = true;
-    }
-  }
-
-
-  initService() {
-
-    this.orchestrator.getService().subscribe(resp => {
-        let s = resp;
-        this.services = s.result;
-        this.ELEMENT_DATA = [...this.services];
-        this.dataSource = new MatTableDataSource<any>(this.ELEMENT_DATA);
-        this.dataSource.paginator = this.paginator;
-      },
-      (error) => {
-        console.log(error);
-      });
-  }
 
   onChange(event) {
     const selected = <FormArray>this.responseFormGroup.get('selected') as FormArray;
@@ -282,29 +287,32 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
 
   }
 
+  visualizeMore() {
+    let toCheck = this.selection.selected[0].Sensor_ID;
+    let pass = true;
+    for (let s of this.selection.selected) {
+      if (s.Sensor_ID != toCheck) {
+        pass = false;
+      }
+    }
+    if (pass) {
+      this.showPanel = true;
+      this.panelOpenState = !this.panelOpenState;
+      this.charChild.visualizeList(this.selection.selected);
+    } else {
+      this.notifier.notify('error', "Error: The sensors must be of the same type");
+    }
+  }
 
-  getCities() {
-    this.orchestrator.getCities()
-      .subscribe(response => {
-          this.response = response;
-          this.cities = [...this.response.result];
-        }
-      ),
-      err => {
-        console.log('Error in get!');
-      };
+
+  async getCities() {
+    this.response = await this.orchestrator.getCities();
+    this.cities = [...this.response.result];
   }
 
   getSensors() {
-    this.orchestrator.getSensors()
-      .subscribe(response => {
-          this.response = response;
-          this.sensors = [...this.response.result];
-        }
-      ),
-      err => {
-        console.log('Error in get!');
-      };
+    this.response = this.orchestrator.getSensors();
+    this.sensors = [...this.response.result];
   }
 
 
@@ -339,6 +347,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
           .subscribe(response => {
               this.response = response;
               this.initService();
+              this.selection.clear();
               this.notifier.notify('success', this.response.message + ' ' + 'Sensor ID: ' + this.response.Removed_Sensor_ID + ' Location: ' + this.response.Removed_Site_ID);
 
             },
@@ -376,8 +385,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       let city = result.city;
       let data = {city: city, sensor: sensor};
       this.charChild.changeConfig(city, sensor);
-
-
     });
   }
 }
@@ -394,7 +401,6 @@ export class RequestDialog {
   savedElement: any[] = [];
   public readonly notifier: NotifierService;
 
-  isLinear = true;
   responseFormGroup: FormGroup;
   firstFormGroup: FormGroup;
   secondFormGroup: FormGroup;
@@ -434,7 +440,6 @@ export class RequestDialog {
   submitRequest() {
     this.options = [];
     this.checkedElement = [];
-
     this.orchestrator.orchestration(this.selectedService)
       .subscribe(response => {
           //this.notifier.notify('success', "Your request has been successfully submitted. ");
@@ -443,7 +448,7 @@ export class RequestDialog {
             this.options.push(r);
           }
         },
-        (error) => {
+        () => {
           // this.notifier.notify('error', " " + error);
         })
   }
@@ -491,6 +496,7 @@ export class RequestDialog {
         }
       )
   }
+
 
   onChange(event) {
     const selected = <FormArray>this.responseFormGroup.get('selected') as FormArray;

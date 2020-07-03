@@ -29,6 +29,7 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatTableModule} from "@angular/material/table";
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatStepperModule} from '@angular/material/stepper';
+import {ConfirmationPopoverModule} from 'angular-confirmation-popover';
 
 
 @NgModule({
@@ -40,7 +41,7 @@ import {MatStepperModule} from '@angular/material/stepper';
     HomeComponent,
     ChartVisualizationComponent,
     DialogFil,
-    RequestDialog,
+    RequestDialog
   ],
   imports: [
     BrowserModule,
@@ -68,6 +69,9 @@ import {MatStepperModule} from '@angular/material/stepper';
     MatTableModule,
     MatPaginatorModule,
     MatStepperModule,
+    ConfirmationPopoverModule.forRoot({
+      confirmButtonType: 'danger', // set defaults here
+    }),
 
   ],
   providers: [
