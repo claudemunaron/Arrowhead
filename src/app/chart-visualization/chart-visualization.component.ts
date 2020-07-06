@@ -80,22 +80,42 @@ export class ChartVisualizationComponent implements OnInit {
     {
       data: [],
       backgroundColor: 'transparent',
-      borderColor: '#097341',
-      type: 'line'
+      borderColor: '#24D46D',
+      type: 'line',
+      label: 'Sensor 1'
     },
     {
       data: [],
       backgroundColor: 'transparent',
-      borderColor: 'blue',
+      borderColor: '#0119F5',
       pointBackgroundColor: '#5dade2',
-      type: 'line'
+      type: 'line',
+      label: 'Sensor 2'
     },
 
     {
       data: [],
       backgroundColor: 'transparent',
-      borderColor: '#097341',
-      type: 'line'
+      borderColor: '#FA6D12',
+      pointBackgroundColor: '#5dade2',
+      type: 'line',
+      label: 'Sensor 3'
+    },
+
+    {
+      data: [],
+      backgroundColor: 'transparent',
+      borderColor: '#DB30B4',
+      type: 'line',
+      label: 'Sensor 4'
+    },
+
+    {
+      data: [],
+      backgroundColor: 'transparent',
+      borderColor: '#D9C8BD',
+      type: 'line',
+      label: 'Sensor 5'
     },
 
   ];
@@ -227,6 +247,7 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
   async getDataList(list) {
+    alert(JSON.stringify(list));
     let timeRange = this.getTimeRange(this.offset);
     this.filter.city = [];
     this.filter.dF = new Date();
@@ -257,6 +278,14 @@ export class ChartVisualizationComponent implements OnInit {
     this.lineChart.chart.data.datasets.forEach((dataset) => {
       dataset.data = [];
     });
+
+    this.lineChart.chart.data.datasets[1].label = 'Sensor 1';
+    this.lineChart.chart.data.datasets[2].label = 'Sensor 2';
+    this.lineChart.chart.data.datasets[3].label = 'Sensor 3';
+    this.lineChart.chart.data.datasets[4].label = 'Sensor 4';
+    this.lineChart.chart.data.datasets[5].label = 'Sensor 5';
+
+
     currentLabel = [];
     this.lineChartLabels = [];  /*Refresh label*/
     let total = tot;
@@ -399,9 +428,7 @@ export class ChartVisualizationComponent implements OnInit {
         if (i != position) {
           this.lineChart.chart.data.datasets[i].data.push(null);
         }
-        //this.lineChart.chart.data.datasets[i].data.push(null);
       }
-      //this.lineChart.chart.data.datasets[0].data.push(null);
     }
 
     this.lineChartLabels.push(label);
