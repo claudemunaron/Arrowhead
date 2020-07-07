@@ -69,7 +69,6 @@ export class ChartVisualizationComponent implements OnInit {
 
     {
       data: [],
-      label: 'Error',
       backgroundColor: 'red',
       borderColor: 'red',
       type: "scatter",
@@ -82,7 +81,7 @@ export class ChartVisualizationComponent implements OnInit {
       backgroundColor: 'transparent',
       borderColor: '#24D46D',
       type: 'line',
-      label: 'Sensor 1'
+
     },
     {
       data: [],
@@ -90,7 +89,7 @@ export class ChartVisualizationComponent implements OnInit {
       borderColor: '#0119F5',
       pointBackgroundColor: '#5dade2',
       type: 'line',
-      label: 'Sensor 2'
+
     },
 
     {
@@ -99,7 +98,7 @@ export class ChartVisualizationComponent implements OnInit {
       borderColor: '#FA6D12',
       pointBackgroundColor: '#5dade2',
       type: 'line',
-      label: 'Sensor 3'
+
     },
 
     {
@@ -107,7 +106,7 @@ export class ChartVisualizationComponent implements OnInit {
       backgroundColor: 'transparent',
       borderColor: '#DB30B4',
       type: 'line',
-      label: 'Sensor 4'
+
     },
 
     {
@@ -115,15 +114,22 @@ export class ChartVisualizationComponent implements OnInit {
       backgroundColor: 'transparent',
       borderColor: '#D9C8BD',
       type: 'line',
-      label: 'Sensor 5'
     },
 
   ];
   lineChartLabels: Label[] = [];
   lineChartOptions = {
     responsive: true,
+
     legend: {
-      display: true,
+      labels: {
+        filter: function (legendItem, chartData) {
+
+          console.log(JSON.stringify(legendItem));
+          if (legendItem.text == undefined) return false;
+          else return true;
+        }
+      }
     },
     tooltips: {
       callbacks: {
@@ -164,7 +170,7 @@ export class ChartVisualizationComponent implements OnInit {
         },
       }],
       xAxes: [{
-        scaleLabel: {labelString: '', display: true},
+        scaleLabel: {labelString: '', display: false},
         type: 'time',
         ticks: {
           gridLines: {
@@ -190,7 +196,7 @@ export class ChartVisualizationComponent implements OnInit {
     }
   };
   lineChartColors: Color[] = [];
-  lineChartLegend = true;
+  lineChartLegend = ['ciao', 'ciao'];
   lineChartPlugins = {};
   lineChartType = 'line';
 
@@ -247,7 +253,6 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
   async getDataList(list) {
-    alert(JSON.stringify(list));
     let timeRange = this.getTimeRange(this.offset);
     this.filter.city = [];
     this.filter.dF = new Date();
@@ -279,11 +284,11 @@ export class ChartVisualizationComponent implements OnInit {
       dataset.data = [];
     });
 
-    this.lineChart.chart.data.datasets[1].label = 'Sensor 1';
-    this.lineChart.chart.data.datasets[2].label = 'Sensor 2';
-    this.lineChart.chart.data.datasets[3].label = 'Sensor 3';
-    this.lineChart.chart.data.datasets[4].label = 'Sensor 4';
-    this.lineChart.chart.data.datasets[5].label = 'Sensor 5';
+    /* this.lineChart.chart.data.datasets[1].label = 'Sensor 1';
+     this.lineChart.chart.data.datasets[2].label = 'Sensor 2';
+     this.lineChart.chart.data.datasets[3].label = 'Sensor 3';
+     this.lineChart.chart.data.datasets[4].label = 'Sensor 4';
+     this.lineChart.chart.data.datasets[5].label = 'Sensor 5';*/
 
 
     currentLabel = [];
