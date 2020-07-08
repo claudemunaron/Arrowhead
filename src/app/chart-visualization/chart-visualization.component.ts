@@ -74,14 +74,12 @@ export class ChartVisualizationComponent implements OnInit {
       type: "scatter",
       pointStyle: "crossRot",
       pointRadius: 9,
-
     },
     {
       data: [],
       backgroundColor: 'transparent',
       borderColor: '#24D46D',
       type: 'line',
-
     },
     {
       data: [],
@@ -89,33 +87,26 @@ export class ChartVisualizationComponent implements OnInit {
       borderColor: '#0119F5',
       pointBackgroundColor: '#5dade2',
       type: 'line',
-
     },
-
     {
       data: [],
       backgroundColor: 'transparent',
       borderColor: '#FA6D12',
       pointBackgroundColor: '#5dade2',
       type: 'line',
-
     },
-
     {
       data: [],
       backgroundColor: 'transparent',
       borderColor: '#DB30B4',
       type: 'line',
-
     },
-
     {
       data: [],
       backgroundColor: 'transparent',
       borderColor: '#D9C8BD',
       type: 'line',
     },
-
   ];
   lineChartLabels: Label[] = [];
   lineChartOptions = {
@@ -126,7 +117,7 @@ export class ChartVisualizationComponent implements OnInit {
         filter: function (legendItem, chartData) {
 
           console.log(JSON.stringify(legendItem));
-          if (legendItem.text == undefined) return false;
+          if (legendItem.text == undefined || legendItem.text === '') return false;
           else return true;
         }
       }
@@ -196,7 +187,7 @@ export class ChartVisualizationComponent implements OnInit {
     }
   };
   lineChartColors: Color[] = [];
-  lineChartLegend = ['ciao', 'ciao'];
+  lineChartLegend = true;
   lineChartPlugins = {};
   lineChartType = 'line';
 
@@ -284,11 +275,11 @@ export class ChartVisualizationComponent implements OnInit {
       dataset.data = [];
     });
 
-    /* this.lineChart.chart.data.datasets[1].label = 'Sensor 1';
-     this.lineChart.chart.data.datasets[2].label = 'Sensor 2';
-     this.lineChart.chart.data.datasets[3].label = 'Sensor 3';
-     this.lineChart.chart.data.datasets[4].label = 'Sensor 4';
-     this.lineChart.chart.data.datasets[5].label = 'Sensor 5';*/
+    this.lineChart.chart.data.datasets[1].label = '';
+    this.lineChart.chart.data.datasets[2].label = '';
+    this.lineChart.chart.data.datasets[3].label = '';
+    this.lineChart.chart.data.datasets[4].label = '';
+    this.lineChart.chart.data.datasets[5].label = '';
 
 
     currentLabel = [];
