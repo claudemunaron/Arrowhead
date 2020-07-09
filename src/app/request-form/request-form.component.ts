@@ -134,7 +134,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
         }).then(() => {
         this.initService();
       }).then(() => {
-        alert(JSON.stringify(this.ELEMENT_DATA));
         this.dataSource.sort = this.sort;
       });
     });
@@ -286,7 +285,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
   visualizeMore() {
-    alert(JSON.stringify(this.selection.selected));
     let toCheck = this.selection.selected[0].Sensor_ID;
     let pass = true;
     for (let s of this.selection.selected) {
@@ -366,7 +364,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
 
   openDialog(): void {
     this.selection.clear();
-    alert('DESELECT' + JSON.stringify(this.selection.selected));
     const dialogRef = this.dialog.open(RequestDialog, {
       width: '40%',
       height: '60%',
