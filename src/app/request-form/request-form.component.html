@@ -37,7 +37,7 @@
       <div id="sensor_table">
         <table [dataSource]="dataSource" mat-table matSort>
           <!-- Checkbox Column -->
-          <ng-container matColumnDef="select">
+          <ng-container matColumnDef="Select">
             <th *matHeaderCellDef mat-header-cell>
               <mat-checkbox (change)="$event ? masterToggle() : null"
                             [aria-label]="checkboxLabel()"
@@ -54,10 +54,7 @@
                             class="chk_select">
               </mat-checkbox>
             </td>
-
           </ng-container>
-
-
           <ng-container matColumnDef="Sensor_ID">
             <th *matHeaderCellDef mat-header-cell mat-sort-header> Sensor_ID</th>
             <td *matCellDef="let element" mat-cell> {{element.Sensor_ID}} </td>
@@ -71,13 +68,13 @@
 
           <!-- Weight Column -->
           <ng-container matColumnDef="Site_ID">
-            <th *matHeaderCellDef mat-header-cell> Location</th>
+            <th *matHeaderCellDef mat-header-cell mat-sort-header>Location</th>
             <td *matCellDef="let element" mat-cell> {{element.Site_ID}} </td>
           </ng-container>
 
           <!-- Symbol Column -->
           <ng-container matColumnDef="Meas_Unit">
-            <th *matHeaderCellDef mat-header-cell> Meas Unit</th>
+            <th *matHeaderCellDef mat-header-cell mat-sort-header> Meas Unit</th>
             <td *matCellDef="let element" mat-cell> {{element.Meas_Unit}} </td>
           </ng-container>
 

@@ -7,6 +7,7 @@ import {ChartVisualizationComponent} from "../chart-visualization/chart-visualiz
 import {MatTableDataSource} from "@angular/material/table";
 import {MatPaginator} from "@angular/material/paginator";
 import {SelectionModel} from '@angular/cdk/collections';
+import {MatSort} from "@angular/material/sort";
 
 export interface DialogData {
   animal: string;
@@ -27,11 +28,13 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
 
   /*char variables*/
   @ViewChild(ChartVisualizationComponent) charChild;
+  @ViewChild(MatSort, {static: true}) sort: MatSort;
+
 
   ELEMENT_DATA: any[] = [];
 
 
-  displayedColumns: string[] = ['select', 'Sensor_ID', 'Sensor_Name', 'Site_ID', 'Meas_Unit'];
+  displayedColumns: string[] = ['Select', 'Sensor_ID', 'Sensor_Name', 'Site_ID', 'Meas_Unit'];
   dataSource = new MatTableDataSource<any>(this.ELEMENT_DATA);
   selection = new SelectionModel<any>(true, []);
   @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
@@ -130,13 +133,18 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
           this.initConfig();
         }).then(() => {
         this.initService();
+      }).then(() => {
+        alert(JSON.stringify(this.ELEMENT_DATA));
+        this.dataSource.sort = this.sort;
       });
     });
   }
 
   async init() {
-    this.initialConfig = await this.orchestrator.getInitialConfig()
+    this.initialConfig = await this.orchestrator.getInitialConfig();
+    //
   }
+
 
   async initConfig() {
     if (this.initialConfig.result && this.initialConfig.result.length > 0) {
@@ -154,6 +162,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
         this.ELEMENT_DATA = [...this.services];
         this.dataSource = new MatTableDataSource<any>(this.ELEMENT_DATA);
         this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
       },
       (error) => {
         console.log(error);
@@ -166,10 +175,12 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
     this.responseFormGroup = this.formBuilder.group({
       selected: this.formBuilder.array([])
     });
+    this.dataSource.sort = this.sort;
   }
 
   ngAfterViewInit() {
     this.mapInitializer();
+    this.dataSource.sort = this.sort;
   }
 
   receiveMessageLA($event) {
@@ -239,20 +250,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
 
-  save() {
-    this.savedElement = [...this.checkedElement];
-    if (this.savedElement.length > 0) {
-      for (let s of this.savedElement) {
-        let optionBody = this.options.filter(
-          (o) =>
-            o.metadata.FE_Sensor_ID == s.FE_Sensor_ID && o.metadata.FE_Site_ID == s.FE_Site_ID
-        );
-        this.postUpdate(optionBody[0]);
-      }
-    } else {
-      this.notifier.notify('warning', 'Warning: no element selected');
-    }
-  }
+
 
 
   postUpdate(toConfig) {
@@ -288,6 +286,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
   visualizeMore() {
+    alert(JSON.stringify(this.selection.selected));
     let toCheck = this.selection.selected[0].Sensor_ID;
     let pass = true;
     for (let s of this.selection.selected) {
@@ -366,11 +365,14 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
 
 
   openDialog(): void {
+    this.selection.clear();
+    alert('DESELECT' + JSON.stringify(this.selection.selected));
     const dialogRef = this.dialog.open(RequestDialog, {
       width: '40%',
       height: '60%',
 
-      data: {name: 'name', animal: 'animal'}
+      data: {name: 'name', animal: 'animal'},
+
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -381,10 +383,10 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       this.charChild.getCities();
       this.getCities();
 
-      let sensor = result.sensor;
-      let city = result.city;
-      let data = {city: city, sensor: sensor};
-      this.charChild.changeConfig(city, sensor);
+      // let sensor = result.sensor;
+      // let city = result.city;
+      //   let data = {city: city, sensor: sensor};
+      //this.charChild.changeConfig(city, sensor);
     });
   }
 }

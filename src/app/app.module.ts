@@ -30,6 +30,7 @@ import {MatTableModule} from "@angular/material/table";
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatStepperModule} from '@angular/material/stepper';
 import {ConfirmationPopoverModule} from 'angular-confirmation-popover';
+import {MatSortModule} from "@angular/material/sort";
 
 
 @NgModule({
@@ -69,6 +70,7 @@ import {ConfirmationPopoverModule} from 'angular-confirmation-popover';
     MatTableModule,
     MatPaginatorModule,
     MatStepperModule,
+    MatSortModule,
     ConfirmationPopoverModule.forRoot({
       confirmButtonType: 'danger', // set defaults here
     }),
