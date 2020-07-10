@@ -249,9 +249,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
 
-
-
-
   postUpdate(toConfig) {
     this.orchestrator.saveConfig(toConfig)
       .subscribe(response => {
@@ -285,6 +282,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
   visualizeMore() {
+
     let toCheck = this.selection.selected[0].Sensor_ID;
     let pass = true;
     for (let s of this.selection.selected) {
@@ -293,12 +291,45 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       }
     }
     if (pass) {
+      this.updateMap();
       this.showPanel = true;
       this.panelOpenState = !this.panelOpenState;
       this.charChild.visualizeList(this.selection.selected);
     } else {
       this.notifier.notify('error', "Error: The sensors must be of the same type");
     }
+  }
+
+  updateMap() {
+    var latlng = [];
+    for (let s of this.selection.selected) {
+      this.addToMap(s.Latitude, s.Longitude);
+      latlng.push(new google.maps.LatLng(s.Latitude, s.Longitude))
+    }
+
+
+    var latlngbounds = new google.maps.LatLngBounds();
+    for (var i = 0; i < latlng.length; i++) {
+      latlngbounds.extend(latlng[i]);
+    }
+    this.map.fitBounds(latlngbounds);
+  }
+
+  addToMap(lat, lng) {
+    this.coordinates = new google.maps.LatLng(lat, lng);
+    /* this.mapOptions = {
+       center: this.coordinates,
+       zoom: 8,
+     };*/
+
+    this.marker = new google.maps.Marker({
+      position: this.coordinates,
+      map: this.map,
+    });
+
+    this.map.setCenter(this.coordinates);
+    this.marker.setPosition(this.coordinates);
+
   }
 
 
@@ -368,7 +399,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       width: '40%',
       height: '60%',
 
-      data: {name: 'name', animal: 'animal'},
 
     });
 

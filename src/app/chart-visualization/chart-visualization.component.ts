@@ -79,6 +79,7 @@ export class ChartVisualizationComponent implements OnInit {
       data: [],
       backgroundColor: 'transparent',
       borderColor: '#24D46D',
+      pointBackgroundColor: '#11DB42',
       type: 'line',
     },
     {
@@ -92,19 +93,21 @@ export class ChartVisualizationComponent implements OnInit {
       data: [],
       backgroundColor: 'transparent',
       borderColor: '#FA6D12',
-      pointBackgroundColor: '#5dade2',
+      pointBackgroundColor: '#FF802B',
       type: 'line',
     },
     {
       data: [],
       backgroundColor: 'transparent',
       borderColor: '#DB30B4',
+      pointBackgroundColor: 'FF52D7',
       type: 'line',
     },
     {
       data: [],
       backgroundColor: 'transparent',
       borderColor: '#D9C8BD',
+      pointBackgroundColor: '#8C796C',
       type: 'line',
     },
   ];
