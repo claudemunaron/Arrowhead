@@ -386,7 +386,10 @@ export class ChartVisualizationComponent implements OnInit {
   sendRequestUpdate() {
     let city = this.filter.city;
     let sensor = this.filter.sName;
-    this.getCoordinates(sensor, city);
+    for (let s of city) {
+      this.getCoordinates(sensor, s);
+    }
+
     let timeRange = this.getTimeRange(this.offset);
 
     this.update(sensor, city, timeRange)

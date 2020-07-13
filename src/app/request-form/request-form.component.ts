@@ -537,7 +537,6 @@ export class RequestDialog {
       selected.removeAt(i);
       this.checkedElement.splice(i, 1);
     }
-
   }
 
 
