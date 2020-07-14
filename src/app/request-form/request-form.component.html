@@ -1,5 +1,5 @@
 <mat-accordion>
-  <mat-expansion-panel [expanded]="!panelOpenState">
+  <mat-expansion-panel (opened)="refreshMap()" [expanded]="!panelOpenState">
     <mat-expansion-panel-header>
       <mat-panel-title>
         Orchestration

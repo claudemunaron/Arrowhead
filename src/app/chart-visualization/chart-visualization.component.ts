@@ -26,8 +26,8 @@ export default currentLabel
 
 export class ChartVisualizationComponent implements OnInit {
   @ViewChild(BaseChartDirective) lineChart: BaseChartDirective;
-  @Output() messageEventLA = new EventEmitter<number>();
-  @Output() messageEventLO = new EventEmitter<number>();
+  @Output() messageEventLA = new EventEmitter<any>();
+  @Output() messageEventLO = new EventEmitter<string>();
 
   messageLatitude = 0;
   messageLongitude = 0;
@@ -349,8 +349,12 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
   sendMessage() {
-    this.messageEventLA.emit(this.messageLatitude);
-    this.messageEventLO.emit(this.messageLongitude);
+    let c = {
+      lat: this.messageLatitude,
+      lng: this.messageLongitude
+    };
+    this.messageEventLA.emit(c);
+    // this.messageEventLO.emit(this.messageLongitude);
   }
 
   openDialog(): void {
@@ -368,7 +372,9 @@ export class ChartVisualizationComponent implements OnInit {
         this.filter = result;
         if (this.filter && this.filter.btn === "upd") {
           console.log('Updating');
-          this.sendRequestUpdate();
+          this.sendRequestUpdate().then(() => {
+            this.messageEventLO.emit('set');
+          });
         } else {
           console.log('The dialog was closed');
         }
@@ -383,12 +389,14 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
 
-  sendRequestUpdate() {
+  async sendRequestUpdate() {
     let city = this.filter.city;
     let sensor = this.filter.sName;
+    this.messageEventLO.emit('cancel');
     for (let s of city) {
       this.getCoordinates(sensor, s);
     }
+
 
     let timeRange = this.getTimeRange(this.offset);
 
@@ -397,6 +405,7 @@ export class ChartVisualizationComponent implements OnInit {
           this.draw(city.length);
         }
       )
+
   }
 
 

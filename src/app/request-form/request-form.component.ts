@@ -82,6 +82,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   map: google.maps.Map;
   lat = 0;
   lng = 0;
+  latlng = [];
   coordinates = new google.maps.LatLng(this.lat, this.lng);
   mapOptions: google.maps.MapOptions = {
     center: this.coordinates,
@@ -91,6 +92,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
     position: this.coordinates,
     map: this.map,
   });
+  markersArray = [];
   public readonly notifier: NotifierService;
 
   /** Whether the number of selected elements matches the total number of rows. */
@@ -140,8 +142,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
   async init() {
-    this.initialConfig = await this.orchestrator.getInitialConfig();
-    //
+    this.initialConfig = await this.orchestrator.getInitialConfig()
   }
 
 
@@ -183,13 +184,39 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
   receiveMessageLA($event) {
-    this.lat = $event;
-    //this.changeMapCoordinates();
+
+    this.lat = $event.lat;
+    this.lng = $event.lng;
+
+
+    //this.latlng = [];
+
+
+    this.addToMap(this.lat, this.lng);
+    this.latlng.push(new google.maps.LatLng(this.lat, this.lng));
+
   }
 
   receiveMessageLO($event) {
-    this.lng = $event;
-    this.changeMapCoordinates();
+    if ($event == 'cancel') {
+      this.cleraMap();
+    } else if ($event == 'set') {
+      /*var latlngbounds = new google.maps.LatLngBounds();
+      for (var i = 0; i < this.latlng.length; i++) {
+        alert(i);
+        latlngbounds.extend(this.latlng[i]);
+      }
+      this.map.fitBounds(latlngbounds);*/
+
+    }
+  }
+
+  refreshMap() {
+    var latlngbounds = new google.maps.LatLngBounds();
+    for (var i = 0; i < this.latlng.length; i++) {
+      latlngbounds.extend(this.latlng[i]);
+    }
+    this.map.fitBounds(latlngbounds);
   }
 
 
@@ -199,14 +226,16 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       center: this.coordinates,
       zoom: 8,
     };
-
+    this.cleraMap();
     this.marker = new google.maps.Marker({
       position: this.coordinates,
       map: this.map,
     });
-
+    this.markersArray.push(this.marker);
     this.map.setCenter(this.coordinates);
     this.marker.setPosition(this.coordinates);
+
+
   }
 
   mapInitializer() {
@@ -301,18 +330,27 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
   updateMap() {
-    var latlng = [];
+
+    this.cleraMap();
+
     for (let s of this.selection.selected) {
       this.addToMap(s.Latitude, s.Longitude);
-      latlng.push(new google.maps.LatLng(s.Latitude, s.Longitude))
+      this.latlng.push(new google.maps.LatLng(s.Latitude, s.Longitude))
     }
-
 
     var latlngbounds = new google.maps.LatLngBounds();
-    for (var i = 0; i < latlng.length; i++) {
-      latlngbounds.extend(latlng[i]);
+    for (var i = 0; i < this.latlng.length; i++) {
+      latlngbounds.extend(this.latlng[i]);
     }
     this.map.fitBounds(latlngbounds);
+  }
+
+  cleraMap() {
+    this.latlng = [];
+    for (var lp = 0; lp < this.markersArray.length; lp++) {
+      this.markersArray[lp].setMap(null);
+    }
+    this.markersArray = [];
   }
 
   addToMap(lat, lng) {
@@ -327,9 +365,11 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       map: this.map,
     });
 
+    this.markersArray.push(this.marker);
+
+
     this.map.setCenter(this.coordinates);
     this.marker.setPosition(this.coordinates);
-
   }
 
 
