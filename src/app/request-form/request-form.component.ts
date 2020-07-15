@@ -212,11 +212,14 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
   refreshMap() {
-    var latlngbounds = new google.maps.LatLngBounds();
-    for (var i = 0; i < this.latlng.length; i++) {
-      latlngbounds.extend(this.latlng[i]);
+    if (this.latlng.length > 1) {
+      var latlngbounds = new google.maps.LatLngBounds();
+      for (var i = 0; i < this.latlng.length; i++) {
+        latlngbounds.extend(this.latlng[i]);
+      }
+      this.map.fitBounds(latlngbounds);
     }
-    this.map.fitBounds(latlngbounds);
+
   }
 
 
@@ -261,7 +264,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   submitRequest() {
     this.options = [];
     this.checkedElement = [];
-
 
     this.orchestrator.orchestration(this.selectedService)
       .subscribe(response => {
@@ -337,12 +339,13 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       this.addToMap(s.Latitude, s.Longitude);
       this.latlng.push(new google.maps.LatLng(s.Latitude, s.Longitude))
     }
-
-    var latlngbounds = new google.maps.LatLngBounds();
-    for (var i = 0; i < this.latlng.length; i++) {
-      latlngbounds.extend(this.latlng[i]);
+    if (this.selection.selected.length > 1) {
+      var latlngbounds = new google.maps.LatLngBounds();
+      for (var i = 0; i < this.latlng.length; i++) {
+        latlngbounds.extend(this.latlng[i]);
+      }
+      this.map.fitBounds(latlngbounds);
     }
-    this.map.fitBounds(latlngbounds);
   }
 
   cleraMap() {
@@ -355,10 +358,10 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
 
   addToMap(lat, lng) {
     this.coordinates = new google.maps.LatLng(lat, lng);
-    /* this.mapOptions = {
-       center: this.coordinates,
-       zoom: 8,
-     };*/
+    this.mapOptions = {
+      center: this.coordinates,
+      zoom: 30,
+    };
 
     this.marker = new google.maps.Marker({
       position: this.coordinates,
