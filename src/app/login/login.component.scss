@@ -31,17 +31,16 @@
   background-color: white;
   font-size: 20px;
   letter-spacing: 3px;
+  min-width: 80%;
 
+}
+
+.naming {
+  margin: 0.1em;
 }
 
 mat-form-field {
   padding-bottom: 7px;
-}
-
-.mat-flat-button.mat-primary, .mat-raised-button.mat-primary, .mat-fab.mat-primary, .mat-mini-fab.mat-primary {
-  width: 60% !important;
-  height: 50px !important;
-  max-width: 250px;
 }
 
 
@@ -72,6 +71,15 @@ select:-webkit-autofill:focus {
 
 .example-container .mat-form-field + .mat-form-field {
   margin: 8px;
+}
+
+.form_flex {
+  display: flex;
+}
+
+.form_flex_col {
+  display: flex;
+  flex-direction: column;
 }
 
 

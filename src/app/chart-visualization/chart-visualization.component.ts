@@ -47,6 +47,10 @@ export class ChartVisualizationComponent implements OnInit {
   city: "";
   timeRange = "";
 
+  avgV: any = 0;
+  minV: any = 0;
+  maxV: any = 0;
+
 
   filterDataDF: any = new Date();
   filterDataDT: any = new Date();
@@ -118,7 +122,6 @@ export class ChartVisualizationComponent implements OnInit {
     legend: {
       labels: {
         filter: function (legendItem, chartData) {
-
           console.log(JSON.stringify(legendItem));
           if (legendItem.text == undefined || legendItem.text === '') return false;
           else return true;
@@ -262,12 +265,18 @@ export class ChartVisualizationComponent implements OnInit {
     }
     let newStr = stringList.substring(0, stringList.length - 1);
     this.responseChart = await this.orchestrator.getMultiQuery(newStr, timeRange);
+    this.maxV = await this.orchestrator.maxData(this.filter.sName);
+    this.minV = await this.orchestrator.minData(this.filter.sName);
+    this.avgV = await this.orchestrator.avgData(this.filter.sName);
   }
 
   async getDataInit(site, sensor) {
     let timeRange = this.getTimeRange(this.offset);
     let stringList = '';
     stringList = stringList + site + '+' + sensor;
+    this.maxV = await this.orchestrator.maxData(sensor);
+    this.minV = await this.orchestrator.minData(sensor);
+    this.avgV = await this.orchestrator.avgData(sensor);
     this.responseChart = await this.orchestrator.getMultiQuery(stringList, timeRange);
     this.draw(1);
   }
@@ -415,6 +424,9 @@ export class ChartVisualizationComponent implements OnInit {
       stringList = stringList + s + '+' + sensor + '&'
     }
     let newStr = stringList.substring(0, stringList.length - 1);
+    this.maxV = await this.orchestrator.maxData(sensor);
+    this.minV = await this.orchestrator.minData(sensor);
+    this.avgV = await this.orchestrator.avgData(sensor);
     this.responseChart = await this.orchestrator.getMultiQuery(newStr, timeRange);
   }
 
@@ -432,7 +444,8 @@ export class ChartVisualizationComponent implements OnInit {
       //this.lineChart.chart.data.datasets[position].data.push(null);
     } else {
       this.lineChart.chart.data.datasets[position].data.push(data);
-      this.lineChart.chart.data.datasets[position].label = 'Sensor name: ' + sName + ' ' + site;
+      this.lineChart.chart.data.datasets[position].label = 'Sensor name: ' + sName + ' ' + site +
+        ' avg: ' + this.avgV.result + ' min: ' + this.minV.result + ' max: ' + this.maxV.result;
       let l = 'Sensor name: ' + sName + '-' + mUnit + '-' + site;
       currentLabel.push(l);
       for (let i = 0; i <= total; i++) {

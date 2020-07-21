@@ -141,6 +141,40 @@ export class OrchestratorApiService {
     return await this.http.get(this.addressData + 'city/' + city + '/sensor-id/' + sensorID + '/get-coordinates').toPromise();
   }
 
+  async registration(name, surname, company, role, email, passaword) {
+    this.addressData = localStorage.getItem('addressData');
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+
+      })
+    };
+    const content = {
+      email: email,
+      password: passaword,
+      first_name: name,
+      last_name: surname,
+      company: company,
+      role: role
+    };
+    return await this.http.post(this.addressData + 'register', content, httpOptions).toPromise();
+  }
+
+  async login(email, passaword) {
+    this.addressData = localStorage.getItem('addressData');
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+
+      })
+    };
+    const content = {
+      email: email,
+      password: passaword,
+    };
+    return await this.http.post(this.addressData + 'login', content, httpOptions).toPromise();
+  }
+
   async getTimeZone(lat, lng) {
     return await this.http.get('http://api.timezonedb.com/v2.1/get-time-zone?key=AS89CMPR9VFF&format=json&by=position&lat=' + lat + '&lng=' + lng).toPromise();
   }
@@ -200,5 +234,25 @@ export class OrchestratorApiService {
       tap(data => console.log((JSON.stringify(data)))),
       catchError(this.errorHandler)
     );
+  }
+
+  async minData(sensorID: any, city?: any, time_range?: any) {
+    this.addressData = localStorage.getItem('addressData');
+    return await this.http.get(this.addressData + 'mindata/sensor-id/' + sensorID).toPromise();
+    //return await this.http.get(this.addressData + 'mindata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time_range).toPromise();
+
+  }
+
+  async avgData(sensorID: any, city?: any, time_range?: any) {
+    this.addressData = localStorage.getItem('addressData');
+    return await this.http.get(this.addressData + 'avgdata/sensor-id/' + sensorID).toPromise();
+    // return await this.http.get(this.addressData + 'avgdata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time_range).toPromise();
+  }
+
+  async maxData(sensorID: any, city?: any, time_range?: any) {
+    this.addressData = localStorage.getItem('addressData');
+    return await this.http.get(this.addressData + 'maxdata/sensor-id/' + sensorID).toPromise();
+    //return await this.http.get(this.addressData + 'maxdata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time_range).toPromise();
+
   }
 }

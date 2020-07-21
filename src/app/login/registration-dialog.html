@@ -1,0 +1,41 @@
+<h1 mat-dialog-title>Registration</h1>
+<div mat-dialog-content>
+  <div class="form_flex">
+    <mat-form-field class="naming">
+      <mat-label>Name</mat-label>
+      <input [(ngModel)]="data.name" matInput>
+    </mat-form-field>
+    <mat-form-field class="naming">
+      <mat-label>Surname</mat-label>
+      <input [(ngModel)]="data.surname" matInput>
+    </mat-form-field>
+  </div>
+  <div class="form_flex_col">
+    <mat-form-field class="naming">
+      <mat-label>Email</mat-label>
+      <input [(ngModel)]="data.email" matInput>
+    </mat-form-field>
+    <mat-form-field class="naming">
+      <mat-label>Company</mat-label>
+      <input [(ngModel)]="data.company" matInput>
+    </mat-form-field>
+    <mat-form-field class="naming">
+      <mat-label>Role</mat-label>
+      <input [(ngModel)]="data.role" matInput>
+    </mat-form-field>
+    <mat-form-field class="naming">
+      <mat-label>Password</mat-label>
+      <input [(ngModel)]="data.pass" matInput type="password">
+    </mat-form-field>
+    <mat-form-field class="naming">
+      <mat-label>Confirm Password</mat-label>
+      <input [(ngModel)]="data.cpass" matInput type="password">
+    </mat-form-field>
+  </div>
+
+
+</div>
+<div mat-dialog-actions>
+  <button (click)="onNoClick()" mat-button>No Thanks</button>
+  <button [mat-dialog-close]="data" cdkFocusInitial mat-button>Ok</button>
+</div>
