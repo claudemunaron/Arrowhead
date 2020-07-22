@@ -85,7 +85,7 @@ export class LoginComponent implements OnInit {
       console.log('The dialog was closed');
       this.orchestrator.registration(result.name, result.surname, result.company, result.role, result.email, result.pass)
         .then((response: any) => {
-          alert(JSON.stringify(response));
+
           if (response && response.id) {
             this.notifier.notify('success', 'Success: Registration was successful');
           } else {
