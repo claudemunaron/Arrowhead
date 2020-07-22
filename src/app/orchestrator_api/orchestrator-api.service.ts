@@ -243,9 +243,9 @@ export class OrchestratorApiService {
 
   }
 
-  async avgData(sensorID: any, city?: any, time_range?: any) {
+  async avgData(sensorID: any, city?: any) {
     this.addressData = localStorage.getItem('addressData');
-    return await this.http.get(this.addressData + 'avgdata/sensor-id/' + sensorID).toPromise();
+    return await this.http.get(this.addressData + 'avgdata/city/' + city + '/sensor-id/' + sensorID).toPromise();
     // return await this.http.get(this.addressData + 'avgdata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time_range).toPromise();
   }
 

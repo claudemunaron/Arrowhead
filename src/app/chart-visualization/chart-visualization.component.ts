@@ -281,7 +281,7 @@ export class ChartVisualizationComponent implements OnInit {
     this.draw(1);
   }
 
-  draw(tot) {
+  async draw(tot) {
     let i = 1;
     this.lineChart.chart.data.datasets.forEach((dataset) => {
       dataset.data = [];
@@ -308,9 +308,14 @@ export class ChartVisualizationComponent implements OnInit {
     );
     for (let k of this.responseChart.result) {
       let cont = 0;
+
+      let maxV: any = await this.orchestrator.maxData(k.Sensor_ID, k.Site_ID);
+      let minV: any = await this.orchestrator.minData(k.Sensor_ID, k.Site_ID);
+      let avgV: any = await this.orchestrator.avgData(k.Sensor_ID, k.Site_ID);
+
       for (let e of k.values) {
         if (cont == 0) {
-          this.addDataBis(null, dateChartFrom, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total);
+          this.addDataBis(null, dateChartFrom, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
         }
 
         let unix_timestamp = e.Meas_Timestamp;
@@ -322,10 +327,10 @@ export class ChartVisualizationComponent implements OnInit {
 
         // Will display time in 10:30:23 format
         var formattedTime = date.toDateString() + '  ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-        this.addDataBis(e.Meas_Value, formattedTime, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total);
+        this.addDataBis(e.Meas_Value, formattedTime, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
 
         if (cont == k.values.length - 1) {
-          this.addDataBis(null, dateChartTo, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total);
+          this.addDataBis(null, dateChartTo, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
         }
         cont = cont + 1;
       }
@@ -431,7 +436,7 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
 
-  addDataBis(data, label, sName, sID, site, mUnit, position, total) {
+  addDataBis(data, label, sName, sID, site, mUnit, position, total, max, min, avg) {
     let e = this.errorList.filter((e) => e.error_value == data);
     if (e && e.length > 0) {
       this.lineChart.chart.data.datasets[0].data.push(0);
@@ -445,7 +450,7 @@ export class ChartVisualizationComponent implements OnInit {
     } else {
       this.lineChart.chart.data.datasets[position].data.push(data);
       this.lineChart.chart.data.datasets[position].label = 'Sensor name: ' + sName + ' ' + site +
-        ' avg: ' + this.avgV.result + ' min: ' + this.minV.result + ' max: ' + this.maxV.result;
+        ' avg: ' + avg.result[0] + ' min: ' + min.result[0] + ' max: ' + max.result[0];
       let l = 'Sensor name: ' + sName + '-' + mUnit + '-' + site;
       currentLabel.push(l);
       for (let i = 0; i <= total; i++) {
