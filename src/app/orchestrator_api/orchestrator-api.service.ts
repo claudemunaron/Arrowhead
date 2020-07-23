@@ -236,23 +236,20 @@ export class OrchestratorApiService {
     );
   }
 
-  async minData(sensorID: any, city?: any, time_range?: any) {
+  async minData(sensorID: any, city: any, time: any) {
     this.addressData = localStorage.getItem('addressData');
-    return await this.http.get(this.addressData + 'mindata/sensor-id/' + sensorID).toPromise();
-    //return await this.http.get(this.addressData + 'mindata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time_range).toPromise();
+    return await this.http.get(this.addressData + 'mindata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time).toPromise();
 
   }
 
-  async avgData(sensorID: any, city?: any) {
+  async avgData(sensorID: any, city: any, time: any) {
     this.addressData = localStorage.getItem('addressData');
-    return await this.http.get(this.addressData + 'avgdata/city/' + city + '/sensor-id/' + sensorID).toPromise();
-    // return await this.http.get(this.addressData + 'avgdata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time_range).toPromise();
+    return await this.http.get(this.addressData + 'avgdata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time).toPromise();
   }
 
-  async maxData(sensorID: any, city?: any, time_range?: any) {
+  async maxData(sensorID: any, city: any, time: any) {
     this.addressData = localStorage.getItem('addressData');
-    return await this.http.get(this.addressData + 'maxdata/sensor-id/' + sensorID).toPromise();
-    //return await this.http.get(this.addressData + 'maxdata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time_range).toPromise();
+    return await this.http.get(this.addressData + 'maxdata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time).toPromise();
 
   }
 }

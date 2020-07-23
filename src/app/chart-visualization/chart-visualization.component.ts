@@ -32,6 +32,7 @@ export class ChartVisualizationComponent implements OnInit {
   messageLatitude = 0;
   messageLongitude = 0;
   offset = 0;
+  today: any;
 
   response: any;
   responseChart: any;
@@ -265,18 +266,18 @@ export class ChartVisualizationComponent implements OnInit {
     }
     let newStr = stringList.substring(0, stringList.length - 1);
     this.responseChart = await this.orchestrator.getMultiQuery(newStr, timeRange);
-    this.maxV = await this.orchestrator.maxData(this.filter.sName);
+    /*this.maxV = await this.orchestrator.maxData(this.filter.sName);
     this.minV = await this.orchestrator.minData(this.filter.sName);
-    this.avgV = await this.orchestrator.avgData(this.filter.sName);
+    this.avgV = await this.orchestrator.avgData(this.filter.sName);*/
   }
 
   async getDataInit(site, sensor) {
     let timeRange = this.getTimeRange(this.offset);
     let stringList = '';
     stringList = stringList + site + '+' + sensor;
-    this.maxV = await this.orchestrator.maxData(sensor);
-    this.minV = await this.orchestrator.minData(sensor);
-    this.avgV = await this.orchestrator.avgData(sensor);
+    this.maxV = await this.orchestrator.maxData(sensor, site, this.getTimeRange7Days(this.offset));
+    this.minV = await this.orchestrator.minData(sensor, site, this.getTimeRange7Days(this.offset));
+    this.avgV = await this.orchestrator.avgData(sensor, site, this.getTimeRange7Days(this.offset));
     this.responseChart = await this.orchestrator.getMultiQuery(stringList, timeRange);
     this.draw(1);
   }
@@ -309,9 +310,9 @@ export class ChartVisualizationComponent implements OnInit {
     for (let k of this.responseChart.result) {
       let cont = 0;
 
-      let maxV: any = await this.orchestrator.maxData(k.Sensor_ID, k.Site_ID);
-      let minV: any = await this.orchestrator.minData(k.Sensor_ID, k.Site_ID);
-      let avgV: any = await this.orchestrator.avgData(k.Sensor_ID, k.Site_ID);
+      let maxV: any = await this.orchestrator.maxData(k.Sensor_ID, k.Site_ID, this.getTimeRange7Days(this.offset));
+      let minV: any = await this.orchestrator.minData(k.Sensor_ID, k.Site_ID, this.getTimeRange7Days(this.offset));
+      let avgV: any = await this.orchestrator.avgData(k.Sensor_ID, k.Site_ID, this.getTimeRange7Days(this.offset));
 
       for (let e of k.values) {
         if (cont == 0) {
@@ -342,7 +343,6 @@ export class ChartVisualizationComponent implements OnInit {
   refresh() {
     this.sendRequestUpdate();
   }
-
 
   async getCities() {
     this.response = await this.orchestrator.getCities();
@@ -411,7 +411,6 @@ export class ChartVisualizationComponent implements OnInit {
       this.getCoordinates(sensor, s);
     }
 
-
     let timeRange = this.getTimeRange(this.offset);
 
     this.update(sensor, city, timeRange)
@@ -419,7 +418,6 @@ export class ChartVisualizationComponent implements OnInit {
           this.draw(city.length);
         }
       )
-
   }
 
 
@@ -429,9 +427,9 @@ export class ChartVisualizationComponent implements OnInit {
       stringList = stringList + s + '+' + sensor + '&'
     }
     let newStr = stringList.substring(0, stringList.length - 1);
-    this.maxV = await this.orchestrator.maxData(sensor);
-    this.minV = await this.orchestrator.minData(sensor);
-    this.avgV = await this.orchestrator.avgData(sensor);
+    /* this.maxV = await this.orchestrator.maxData(sensor);
+     this.minV = await this.orchestrator.minData(sensor);
+     this.avgV = await this.orchestrator.avgData(sensor);*/
     this.responseChart = await this.orchestrator.getMultiQuery(newStr, timeRange);
   }
 
@@ -491,6 +489,35 @@ export class ChartVisualizationComponent implements OnInit {
     this.unixtimeT = stop - offset;
 
     return this.unixtimeF + '_' + this.unixtimeT;
+  }
+
+
+  getTimeRange7Days(offset) {
+    /*Data From - Data to*/
+
+    let today = new Date();
+    let todayhT = "23:59";
+
+    let vfilterDataDT = new Date(today);
+
+    let yearDT = vfilterDataDT.getFullYear();
+    let monthDT = vfilterDataDT.getMonth() + 1;
+    let dayDT = vfilterDataDT.getDate();
+
+    let hoursT = parseInt(todayhT.split(":")[0]);
+    let minutesT = parseInt(todayhT.split(":")[1]);
+    let secondT = 0;
+
+
+    let stop = this.getUnixTimeStamp(yearDT, monthDT, dayDT, hoursT, minutesT, secondT);
+    let unixtimeToday = stop - offset;
+
+    return this.getLast7days(unixtimeToday) + '_' + unixtimeToday;
+  }
+
+  getLast7days(timestamp) {
+    let day = 60 * 60 * 24;
+    return timestamp - 7 * day;
   }
 
 
@@ -572,7 +599,6 @@ export class DialogFil {
   async getCity() {
     this.response = await this.orchestrator.getCities();
     this.data.cities = [...this.response.result];
-
   }
 
   getSensorForCity(city) {
