@@ -71,7 +71,6 @@ export class ChartVisualizationComponent implements OnInit {
 
 
   lineChartData: ChartDataSets[] = [
-
     {
       data: [],
       backgroundColor: 'red',
@@ -135,10 +134,9 @@ export class ChartVisualizationComponent implements OnInit {
           var l = data.datasets[tooltipItem.datasetIndex].label || '';
           var label = currentLabel[tooltipItem.index];
           let s = [];
-          if (label) {
+          if (l) {
             s = label.split('-');
           }
-          // return s[0] + s[2];
           return l;
         },
         footer: function (tooltipItems, data) {
@@ -151,7 +149,7 @@ export class ChartVisualizationComponent implements OnInit {
             value += data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
           });
           if (s[1]) {
-            return 'Sensor measurement: ' + value + " " + s[1];
+            return 'Sensor measurement: ' + value + " " + s[1] + " " + s[3];
           } else {
             return '';
           }
@@ -251,12 +249,12 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
   async getDataList(list) {
-    let timeRange = this.getTimeRange(this.offset);
     this.filter.city = [];
     this.filter.dF = new Date();
     this.filter.dT = new Date();
     this.filter.hF = "00:00";
     this.filter.hT = "23:59";
+    let timeRange = this.getTimeRange(this.offset);
 
     let stringList = '';
     for (let s of list) {
@@ -266,9 +264,6 @@ export class ChartVisualizationComponent implements OnInit {
     }
     let newStr = stringList.substring(0, stringList.length - 1);
     this.responseChart = await this.orchestrator.getMultiQuery(newStr, timeRange);
-    /*this.maxV = await this.orchestrator.maxData(this.filter.sName);
-    this.minV = await this.orchestrator.minData(this.filter.sName);
-    this.avgV = await this.orchestrator.avgData(this.filter.sName);*/
   }
 
   async getDataInit(site, sensor) {
@@ -293,7 +288,6 @@ export class ChartVisualizationComponent implements OnInit {
     this.lineChart.chart.data.datasets[3].label = '';
     this.lineChart.chart.data.datasets[4].label = '';
     this.lineChart.chart.data.datasets[5].label = '';
-
 
     currentLabel = [];
     this.lineChartLabels = [];  /*Refresh label*/
@@ -399,7 +393,6 @@ export class ChartVisualizationComponent implements OnInit {
   async getOffset(lat, lng) {
     let resp: any = await this.orchestrator.getTimeZone(lat, lng);
     this.offset = resp.gmtOffset;
-
   }
 
 
@@ -410,9 +403,7 @@ export class ChartVisualizationComponent implements OnInit {
     for (let s of city) {
       this.getCoordinates(sensor, s);
     }
-
     let timeRange = this.getTimeRange(this.offset);
-
     this.update(sensor, city, timeRange)
       .then(() => {
           this.draw(city.length);
@@ -427,9 +418,6 @@ export class ChartVisualizationComponent implements OnInit {
       stringList = stringList + s + '+' + sensor + '&'
     }
     let newStr = stringList.substring(0, stringList.length - 1);
-    /* this.maxV = await this.orchestrator.maxData(sensor);
-     this.minV = await this.orchestrator.minData(sensor);
-     this.avgV = await this.orchestrator.avgData(sensor);*/
     this.responseChart = await this.orchestrator.getMultiQuery(newStr, timeRange);
   }
 
@@ -444,12 +432,12 @@ export class ChartVisualizationComponent implements OnInit {
       for (let i = 1; i <= total; i++) {
         this.lineChart.chart.data.datasets[i].data.push(null);
       }
-      //this.lineChart.chart.data.datasets[position].data.push(null);
     } else {
       this.lineChart.chart.data.datasets[position].data.push(data);
-      this.lineChart.chart.data.datasets[position].label = 'Sensor name: ' + sName + ' ' + site +
+      this.lineChart.chart.data.datasets[position].label = 'Sensor name: ' + sName + ' ' + site;
+      let l = 'Sensor name: ' + sName + '-' + mUnit + '-' + site + '-' +
         ' avg: ' + avg.result[0] + ' min: ' + min.result[0] + ' max: ' + max.result[0];
-      let l = 'Sensor name: ' + sName + '-' + mUnit + '-' + site;
+
       currentLabel.push(l);
       for (let i = 0; i <= total; i++) {
         if (i != position) {
@@ -457,7 +445,6 @@ export class ChartVisualizationComponent implements OnInit {
         }
       }
     }
-
     this.lineChartLabels.push(label);
   }
 
@@ -492,27 +479,30 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
 
+  /* getTimeRange7Days(offset) {
+     let today = new Date();
+     let todayhT = "23:59";
+
+     let vfilterDataDT = new Date(today);
+
+     let yearDT = vfilterDataDT.getFullYear();
+     let monthDT = vfilterDataDT.getMonth() + 1;
+     let dayDT = vfilterDataDT.getDate();
+
+     let hoursT = parseInt(todayhT.split(":")[0]);
+     let minutesT = parseInt(todayhT.split(":")[1]);
+     let secondT = 0;
+
+
+     let stop = this.getUnixTimeStamp(yearDT, monthDT, dayDT, hoursT, minutesT, secondT);
+     let unixtimeToday = stop - offset;
+
+     return this.getLast7days(unixtimeToday) + '_' + unixtimeToday;
+   }*/
+
   getTimeRange7Days(offset) {
     /*Data From - Data to*/
-
-    let today = new Date();
-    let todayhT = "23:59";
-
-    let vfilterDataDT = new Date(today);
-
-    let yearDT = vfilterDataDT.getFullYear();
-    let monthDT = vfilterDataDT.getMonth() + 1;
-    let dayDT = vfilterDataDT.getDate();
-
-    let hoursT = parseInt(todayhT.split(":")[0]);
-    let minutesT = parseInt(todayhT.split(":")[1]);
-    let secondT = 0;
-
-
-    let stop = this.getUnixTimeStamp(yearDT, monthDT, dayDT, hoursT, minutesT, secondT);
-    let unixtimeToday = stop - offset;
-
-    return this.getLast7days(unixtimeToday) + '_' + unixtimeToday;
+    return this.getLast7days(this.unixtimeF) + '_' + this.unixtimeF;
   }
 
   getLast7days(timestamp) {

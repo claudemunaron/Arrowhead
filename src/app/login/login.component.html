@@ -1,14 +1,11 @@
 <div class="login-form">
   <div class="form">
     <div class="logo">
-
         <img id="logo"
              alt="vital Logo"
              src="assets/vital.jpg"
         />
-
     </div>
-
     <div class="">
       <h5>Vital-IoT Sign In </h5>
       <br>
@@ -29,7 +26,6 @@
         <mat-error *ngIf="password.invalid">{{getErrorMessage()}}</mat-error>
       </mat-form-field>
     </div>
-
     <div class="form-group">
       <button (click)="login()" color="primary" mat-raised-button>Login</button>
       <button (click)="openDialog()" color="accent" mat-raised-button>Register</button>

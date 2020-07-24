@@ -75,6 +75,7 @@ select:-webkit-autofill:focus {
 
 .form_flex {
   display: flex;
+  flex-direction: row;
 }
 
 .form_flex_col {

@@ -69,7 +69,7 @@ export class LoginComponent implements OnInit {
 
   openDialog(): void {
     const dialogRef = this.dialog.open(RegistrationDialog, {
-      minWidth: '350px',
+      minWidth: '450px',
       data: {
         name: this.name,
         surname: this.surname,
