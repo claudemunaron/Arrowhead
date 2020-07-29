@@ -3,7 +3,6 @@
     <mat-icon>clear</mat-icon>
   </button>
 </div>
-
 <div>
   <mat-horizontal-stepper #stepper [linear]="true">
     <mat-step>
@@ -17,20 +16,13 @@
                 <mat-option value="mqtt">MQTT</mat-option>
               </mat-select>
             </mat-form-field>
-
             <mat-form-field>
               <mat-label>Service Definition</mat-label>
               <mat-select [(value)]="selectedService" required>
-                <mat-option value="vital_co2_sensor">vital_co2_sensor</mat-option>
-                <mat-option value="vital_no2_sensor">vital_no2_sensor</mat-option>
-                <mat-option value="vital_temperature_sensor">vital_temperature_sensor</mat-option>
-                <mat-option value="vital_humidity_sensor">vital_humidity_sensor</mat-option>
-                <mat-option value="vital_o3_sensor">vital_o3_sensor</mat-option>
-                <mat-option value="vital_pm10_sensor">vital_pm10_sensor</mat-option>
-                <mat-option value="vital_pm25_sensor">vital_pm25_sensor</mat-option>
+                <mat-option *ngFor="let o of serviceDefinition.result;" [value]="o">{{o}}</mat-option>
+
               </mat-select>
             </mat-form-field>
-
             <mat-form-field>
               <mat-label>Location</mat-label>
               <mat-select [(value)]="selectedLocation">
@@ -50,7 +42,6 @@
       <form [formGroup]="responseFormGroup">
         <div class="mainbox">
           <ng-template class="stepTitle" matStepLabel>Response</ng-template>
-
           <div *ngFor="let o of options; let i = index">
             <mat-checkbox (change)="onChange($event)" [value]="o.metadata"
                           color="primary">

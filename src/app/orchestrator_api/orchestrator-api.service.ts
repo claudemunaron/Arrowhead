@@ -252,4 +252,9 @@ export class OrchestratorApiService {
     return await this.http.get(this.addressData + 'maxdata/city/' + city + '/sensor-id/' + sensorID + '/time-range/' + time).toPromise();
 
   }
+
+  async serviceDefionition() {
+    this.addressData = localStorage.getItem('addressData');
+    return await this.http.get(this.addressData + '/servicedefinitions').toPromise();
+  }
 }

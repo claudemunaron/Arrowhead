@@ -483,7 +483,7 @@ export class RequestDialog {
   selectedService = 'vital_no2_sensor';
   requestResponse: any;
   response: any;
-
+  serviceDefinition: any;
 
   constructor(private orchestrator: OrchestratorApiService, notifierService: NotifierService,
               private formBuilder: FormBuilder,
@@ -493,7 +493,7 @@ export class RequestDialog {
   }
 
 
-  ngOnInit() {
+  async ngOnInit() {
     this.responseFormGroup = this.formBuilder.group({
       selected: this.formBuilder.array([])
     });
@@ -503,6 +503,8 @@ export class RequestDialog {
     this.secondFormGroup = this._formBuilder.group({
       secondCtrl: ['', Validators.required]
     });
+
+    this.serviceDefinition = await this.orchestrator.serviceDefionition();
   }
 
   onNoClick(): void {
