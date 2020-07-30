@@ -299,7 +299,7 @@ export class ChartVisualizationComponent implements OnInit {
 
     /*timerange from - to*/
     let dateChartFrom = await new Date((this.unixtimeF + this.offset) * 1000);
-    let dateChartTo = new Date((this.unixtimeT) * 1000);
+    let dateChartTo = await new Date((this.unixtimeT) * 1000);
 
     var hoursFrom = (new Date((this.unixtimeF + this.offset) * 1000)).getUTCHours();
     var minutesFrom = "0" + (new Date((this.unixtimeF + this.offset) * 1000)).getUTCMinutes();
@@ -342,7 +342,7 @@ export class ChartVisualizationComponent implements OnInit {
         this.addDataBis(e.Meas_Value, formattedTime, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
 
         if (cont == k.values.length - 1) {
-          this.addDataBis(null, formattedTimeTo, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
+          this.addDataBis(null, dateChartTo, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
         }
         cont = cont + 1;
       }
