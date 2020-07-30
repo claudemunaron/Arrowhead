@@ -218,7 +218,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
 
   refreshMap() {
     if (this.latlng.length > 2) {
-      alert(this.latlng.length);
+
       var latlngbounds = new google.maps.LatLngBounds();
       for (var i = 0; i < this.latlng.length; i++) {
         latlngbounds.extend(this.latlng[i]);
