@@ -87,6 +87,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   mapOptions: google.maps.MapOptions = {
     center: this.coordinates,
     zoom: 8,
+    minZoom: 8, maxZoom: 8
   };
   marker = new google.maps.Marker({
     position: this.coordinates,
@@ -176,6 +177,7 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
       selected: this.formBuilder.array([])
     });
     this.dataSource.sort = this.sort;
+    this.refreshMap();
   }
 
   ngAfterViewInit() {
@@ -189,11 +191,13 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
     this.lng = $event.lng;
 
 
-    //this.latlng = [];
+    // this.latlng = [];
 
 
     this.addToMap(this.lat, this.lng);
     this.latlng.push(new google.maps.LatLng(this.lat, this.lng));
+    this.refreshMap();
+    this.map.setZoom(12);
 
   }
 
@@ -201,25 +205,28 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
     if ($event == 'cancel') {
       this.cleraMap();
     } else if ($event == 'set') {
+
       /*var latlngbounds = new google.maps.LatLngBounds();
       for (var i = 0; i < this.latlng.length; i++) {
         alert(i);
         latlngbounds.extend(this.latlng[i]);
       }
       this.map.fitBounds(latlngbounds);*/
-
+      this.refreshMap();
     }
   }
 
   refreshMap() {
-    if (this.latlng.length > 1) {
+    if (this.latlng.length > 2) {
+      alert(this.latlng.length);
       var latlngbounds = new google.maps.LatLngBounds();
       for (var i = 0; i < this.latlng.length; i++) {
         latlngbounds.extend(this.latlng[i]);
       }
       this.map.fitBounds(latlngbounds);
+    } else {
+      this.changeMapCoordinates();
     }
-
   }
 
 
@@ -313,9 +320,10 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   }
 
   visualizeMore() {
-
+    this.latlng = [];
     let toCheck = this.selection.selected[0].Sensor_ID;
     let pass = true;
+
     for (let s of this.selection.selected) {
       if (s.Sensor_ID != toCheck) {
         pass = false;
@@ -334,7 +342,6 @@ export class RequestFormComponent implements OnInit, AfterViewInit {
   updateMap() {
 
     this.cleraMap();
-
     for (let s of this.selection.selected) {
       this.addToMap(s.Latitude, s.Longitude);
       this.latlng.push(new google.maps.LatLng(s.Latitude, s.Longitude))

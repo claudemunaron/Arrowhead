@@ -282,6 +282,7 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
   async draw(tot) {
+
     let i = 1;
     this.lineChart.chart.data.datasets.forEach((dataset) => {
       dataset.data = [];
@@ -298,8 +299,10 @@ export class ChartVisualizationComponent implements OnInit {
     let total = tot;
 
     /*timerange from - to*/
-    let dateChartFrom = await new Date((this.unixtimeF + this.offset) * 1000);
-    let dateChartTo = await new Date((this.unixtimeT) * 1000);
+
+    let dateChartFrom = new Date((this.unixtimeF + this.offset) * 1000);
+    let dateChartTo = (new Date((this.unixtimeT + this.offset) * 1000));
+    dateChartTo.setDate(dateChartTo.getDate() - 1);
 
     var hoursFrom = (new Date((this.unixtimeF + this.offset) * 1000)).getUTCHours();
     var minutesFrom = "0" + (new Date((this.unixtimeF + this.offset) * 1000)).getUTCMinutes();
@@ -308,9 +311,10 @@ export class ChartVisualizationComponent implements OnInit {
     console.log('FROM' + formattedTimeFROM);
 
     var hoursTo = (new Date((this.unixtimeT + this.offset) * 1000)).getUTCHours();
+
     var minutesTo = "0" + (new Date((this.unixtimeT + this.offset) * 1000)).getUTCMinutes();
     var secondsTo = "0" + (new Date((this.unixtimeT + this.offset) * 1000)).getUTCSeconds();
-    var formattedTimeTo = dateChartTo.toDateString() + '  ' + hoursTo + ':' + minutesTo.substr(-2) + ':' + secondsTo.substr(-2);
+    var formattedTimeTo = (dateChartTo).toDateString() + '  ' + hoursTo + ':' + minutesTo.substr(-2) + ':' + secondsTo.substr(-2);
 
     this.responseChart.result = this.responseChart.result.sort((a, b) => {
         return b.values.length - a.values.length;
@@ -329,25 +333,24 @@ export class ChartVisualizationComponent implements OnInit {
         }
         let unix_timestamp = e.Meas_Timestamp;
 
-        var date = (new Date((unix_timestamp + this.offset) * 1000));
+        var date = (new Date((unix_timestamp) * 1000));
         var hours = (new Date((unix_timestamp + this.offset) * 1000)).getUTCHours();
         var minutes = "0" + (new Date((unix_timestamp + this.offset) * 1000)).getUTCMinutes();
         var seconds = "0" + (new Date((unix_timestamp + this.offset) * 1000)).getUTCSeconds();
         var formattedTime = date.toDateString() + '  ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 
-        console.log('FROM' + formattedTimeFROM);
-        console.log('TO' + formattedTimeTo);
-
-
         this.addDataBis(e.Meas_Value, formattedTime, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
 
         if (cont == k.values.length - 1) {
-          this.addDataBis(null, dateChartTo, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
+          this.addDataBis(null, formattedTimeTo, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
         }
+
         cont = cont + 1;
       }
       i = i + 1;
     }
+
+
   }
 
 
@@ -415,7 +418,11 @@ export class ChartVisualizationComponent implements OnInit {
 
 
   async sendRequestUpdate() {
-    let city = this.filter.city;
+    let city = "";
+    if (this.filter.city) {
+      city = this.filter.city;
+    }
+
     let sensor = this.filter.sName;
     this.messageEventLO.emit('cancel');
     for (let s of city) {
@@ -424,7 +431,7 @@ export class ChartVisualizationComponent implements OnInit {
     let timeRange = await this.getTimeRange(this.offset);
     this.update(sensor, city, timeRange)
       .then(() => {
-          this.draw(city.length);
+        this.draw(city.length);
         }
       )
   }
