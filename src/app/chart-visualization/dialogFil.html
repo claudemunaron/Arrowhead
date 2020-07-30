@@ -36,10 +36,6 @@
 
 
   <div class="filter_item">
-    <!--<mat-form-field class="example-full-width">
-      <mat-label>Sensor name</mat-label>
-      <input matInput placeholder="Ex. HUM Sensor" value="HUM Sensor">
-    </mat-form-field>-->
     <mat-form-field>
       <mat-label>Select a sensor</mat-label>
       <mat-select (selectionChange)="changeSensor($event)" [(value)]="selectedSensor" [formControl]="sensorError"
@@ -52,11 +48,6 @@
   </div>
 
   <div class="filter_item">
-    <!--<mat-form-field class="example-full-width">
-      <mat-label>Site ID</mat-label>
-      <input matInput placeholder="Ex. Torino" value="Torino">
-    </mat-form-field> -->
-
     <mat-form-field>
       <mat-label>Select a city</mat-label>
       <mat-select [(value)]="selectedCity" [formControl]="cityError" multiple required>
@@ -66,10 +57,6 @@
       </mat-select>
       <mat-error *ngIf="cityError.invalid"> Select a city</mat-error>
     </mat-form-field>
-    <!--<p>You selected: {{selectedCity}}</p>-->
-
-    <!-- <p>You selected: {{selectedCity}}</p>-->
-
   </div>
 </div>
 
@@ -77,4 +64,4 @@
   <button (click)="onNoClick()" class="close_btn" mat-button>Close</button>
   <button (click)="update()" class="upd_btn" mat-button>Update</button>
 </div>
-<!-- [mat-dialog-close]="filter" -->
+

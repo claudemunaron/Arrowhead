@@ -160,8 +160,6 @@ export class ChartVisualizationComponent implements OnInit {
       yAxes: [{
         display: true,
         ticks: {
-          beginAtZero: true,
-          stepSize: 5,
           autoSkip: false,
         },
       }],
@@ -209,7 +207,8 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    this.offset = await this.getOffset(this.initialConfig.result[0].FE_Latitude, this.initialConfig.result[0].FE_Longitude);
     this.orchestrator.getErrorList().subscribe(response => {
         this.errorList = response.result;
       },
@@ -235,7 +234,7 @@ export class ChartVisualizationComponent implements OnInit {
       this.filter.hF = "00:00";
       this.filter.hT = "23:59";
 
-      this.getOffset(this.initialConfig.result[0].FE_Latitude, this.initialConfig.result[0].FE_Longitude);
+      this.offset = await this.getOffset(this.initialConfig.result[0].FE_Latitude, this.initialConfig.result[0].FE_Longitude);
     }
   }
 
@@ -249,25 +248,30 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
   async getDataList(list) {
+    if (this.filter.city) {
+      this.filter.city = [];
+    }
     this.filter.city = [];
     this.filter.dF = new Date();
     this.filter.dT = new Date();
     this.filter.hF = "00:00";
     this.filter.hT = "23:59";
-    let timeRange = this.getTimeRange(this.offset);
+
 
     let stringList = '';
     for (let s of list) {
       stringList = stringList + s.Site_ID + '+' + s.Sensor_ID + '&';
       this.filter.sName = s.Sensor_ID;
       this.filter.city.push(s.Site_ID);
+      await this.getCoordinates(s.Sensor_ID, s.Site_ID);
     }
+    let timeRange = await this.getTimeRange(this.offset);
     let newStr = stringList.substring(0, stringList.length - 1);
     this.responseChart = await this.orchestrator.getMultiQuery(newStr, timeRange);
   }
 
   async getDataInit(site, sensor) {
-    let timeRange = this.getTimeRange(this.offset);
+    let timeRange = await this.getTimeRange(this.offset);
     let stringList = '';
     stringList = stringList + site + '+' + sensor;
     this.maxV = await this.orchestrator.maxData(sensor, site, this.getTimeRange7Days(this.offset));
@@ -294,8 +298,19 @@ export class ChartVisualizationComponent implements OnInit {
     let total = tot;
 
     /*timerange from - to*/
-    let dateChartFrom = new Date(this.unixtimeF * 1000);
-    let dateChartTo = new Date(this.unixtimeT * 1000);
+    let dateChartFrom = await new Date((this.unixtimeF + this.offset) * 1000);
+    let dateChartTo = new Date((this.unixtimeT) * 1000);
+
+    var hoursFrom = (new Date((this.unixtimeF + this.offset) * 1000)).getUTCHours();
+    var minutesFrom = "0" + (new Date((this.unixtimeF + this.offset) * 1000)).getUTCMinutes();
+    var secondsFrom = "0" + (new Date((this.unixtimeF + this.offset) * 1000)).getUTCSeconds();
+    var formattedTimeFROM = dateChartFrom.toDateString() + '  ' + hoursFrom + ':' + minutesFrom.substr(-2) + ':' + secondsFrom.substr(-2);
+    console.log('FROM' + formattedTimeFROM);
+
+    var hoursTo = (new Date((this.unixtimeT + this.offset) * 1000)).getUTCHours();
+    var minutesTo = "0" + (new Date((this.unixtimeT + this.offset) * 1000)).getUTCMinutes();
+    var secondsTo = "0" + (new Date((this.unixtimeT + this.offset) * 1000)).getUTCSeconds();
+    var formattedTimeTo = dateChartTo.toDateString() + '  ' + hoursTo + ':' + minutesTo.substr(-2) + ':' + secondsTo.substr(-2);
 
     this.responseChart.result = this.responseChart.result.sort((a, b) => {
         return b.values.length - a.values.length;
@@ -310,22 +325,24 @@ export class ChartVisualizationComponent implements OnInit {
 
       for (let e of k.values) {
         if (cont == 0) {
-          this.addDataBis(null, dateChartFrom, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
+          this.addDataBis(null, formattedTimeFROM, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
         }
-
         let unix_timestamp = e.Meas_Timestamp;
-        console.log(unix_timestamp);
-        var date = new Date(unix_timestamp * 1000);
-        var hours = date.getHours();
-        var minutes = "0" + date.getMinutes();
-        var seconds = "0" + date.getSeconds();
 
-        // Will display time in 10:30:23 format
+        var date = (new Date((unix_timestamp + this.offset) * 1000));
+        var hours = (new Date((unix_timestamp + this.offset) * 1000)).getUTCHours();
+        var minutes = "0" + (new Date((unix_timestamp + this.offset) * 1000)).getUTCMinutes();
+        var seconds = "0" + (new Date((unix_timestamp + this.offset) * 1000)).getUTCSeconds();
         var formattedTime = date.toDateString() + '  ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+        console.log('FROM' + formattedTimeFROM);
+        console.log('TO' + formattedTimeTo);
+
+
         this.addDataBis(e.Meas_Value, formattedTime, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
 
         if (cont == k.values.length - 1) {
-          this.addDataBis(null, dateChartTo, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
+          this.addDataBis(null, formattedTimeTo, e.Sensor_Name, e.Sensor_ID, e.Site_ID, e.Meas_Unit, i, total, maxV, minV, avgV);
         }
         cont = cont + 1;
       }
@@ -352,7 +369,7 @@ export class ChartVisualizationComponent implements OnInit {
     this.response = await this.orchestrator.getCoordinates(sID, city);
     this.messageLatitude = this.response.result[0].Latitude;
     this.messageLongitude = this.response.result[0].Longitude;
-    this.getOffset(this.messageLatitude, this.messageLongitude);
+    this.offset = await this.getOffset(this.messageLatitude, this.messageLongitude);
     this.sendMessage();
   }
 
@@ -392,7 +409,8 @@ export class ChartVisualizationComponent implements OnInit {
 
   async getOffset(lat, lng) {
     let resp: any = await this.orchestrator.getTimeZone(lat, lng);
-    this.offset = resp.gmtOffset;
+    //this.offset = await resp.gmtOffset;
+    return resp.gmtOffset;
   }
 
 
@@ -403,7 +421,7 @@ export class ChartVisualizationComponent implements OnInit {
     for (let s of city) {
       this.getCoordinates(sensor, s);
     }
-    let timeRange = this.getTimeRange(this.offset);
+    let timeRange = await this.getTimeRange(this.offset);
     this.update(sensor, city, timeRange)
       .then(() => {
           this.draw(city.length);
@@ -449,7 +467,7 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
 
-  getTimeRange(offset) {
+  async getTimeRange(offset) {
     /*Data From - Data to*/
     this.filterDataDF = new Date(this.filter.dF);
     this.filterDataDT = new Date(this.filter.dT);
@@ -478,27 +496,6 @@ export class ChartVisualizationComponent implements OnInit {
     return this.unixtimeF + '_' + this.unixtimeT;
   }
 
-
-  /* getTimeRange7Days(offset) {
-     let today = new Date();
-     let todayhT = "23:59";
-
-     let vfilterDataDT = new Date(today);
-
-     let yearDT = vfilterDataDT.getFullYear();
-     let monthDT = vfilterDataDT.getMonth() + 1;
-     let dayDT = vfilterDataDT.getDate();
-
-     let hoursT = parseInt(todayhT.split(":")[0]);
-     let minutesT = parseInt(todayhT.split(":")[1]);
-     let secondT = 0;
-
-
-     let stop = this.getUnixTimeStamp(yearDT, monthDT, dayDT, hoursT, minutesT, secondT);
-     let unixtimeToday = stop - offset;
-
-     return this.getLast7days(unixtimeToday) + '_' + unixtimeToday;
-   }*/
 
   getTimeRange7Days(offset) {
     /*Data From - Data to*/
