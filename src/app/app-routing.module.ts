@@ -4,9 +4,12 @@ import {LoginComponent} from "./login/login.component";
 import {HomeComponent} from "./home/home.component";
 import {OrchestratorApiService} from "./orchestrator_api/orchestrator-api.service";
 
+import {LoginAdminComponent} from "./login-admin/login-admin.component";
+
 const routes: Routes = [
   {path: 'Home', component: HomeComponent},
   {path: 'Login', component: LoginComponent},
+  {path: 'Login-Admin', component: LoginAdminComponent},
   {path: '', redirectTo: '/Login', pathMatch: 'full'},
 ];
 

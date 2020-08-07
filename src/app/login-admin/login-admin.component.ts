@@ -16,12 +16,12 @@ export interface DialogData {
 }
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  selector: 'app-login-admin',
+  templateUrl: './login-admin.component.html',
+  styleUrls: ['./login-admin.component.scss']
 })
 
-export class LoginComponent implements OnInit {
+export class LoginAdminComponent implements OnInit {
   pass = '';
   user = '';
   username = new FormControl('', [Validators.required]);
@@ -65,6 +65,51 @@ export class LoginComponent implements OnInit {
      } else {
        this.notifier.notify('error', 'Error:  Invalid username or password');
      }*/
+  }
+
+  openDialog(): void {
+    const dialogRef = this.dialog.open(RegistrationDialog, {
+      minWidth: '450px',
+      data: {
+        name: this.name,
+        surname: this.surname,
+        company: this.company,
+        role: this.role,
+        email: this.email,
+        pass: this.passw,
+        cpass: this.cpass
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+      this.orchestrator.registration(result.name, result.surname, result.company, result.role, result.email, result.pass)
+        .then((response: any) => {
+
+          if (response && response.id) {
+            this.notifier.notify('success', 'Success: Registration was successful');
+          } else {
+            this.notifier.notify('error', 'Error: Registration failed');
+          }
+        });
+    });
+  }
+}
+
+@Component({
+  selector: 'registration-dialog',
+  templateUrl: 'registration-dialog.html',
+  styleUrls: ['./login-admin.component.scss']
+})
+export class RegistrationDialog {
+
+  constructor(
+    public dialogRef: MatDialogRef<RegistrationDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
   }
 
 }

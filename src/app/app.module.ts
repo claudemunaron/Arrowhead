@@ -11,7 +11,8 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
 import {MatRadioModule} from '@angular/material/radio';
-import {LoginComponent, RegistrationDialog} from './login/login.component';
+import {LoginComponent} from './login/login.component';
+import {LoginAdminComponent, RegistrationDialog} from './login-admin/login-admin.component';
 import {HttpClientModule} from '@angular/common/http';
 import {HomeComponent} from './home/home.component';
 import {NotifierModule} from "angular-notifier";
@@ -39,6 +40,7 @@ import {MatSortModule} from "@angular/material/sort";
     ToolbarComponent,
     RequestFormComponent,
     LoginComponent,
+    LoginAdminComponent,
     HomeComponent,
     ChartVisualizationComponent,
     DialogFil,
